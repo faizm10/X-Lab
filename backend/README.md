@@ -16,27 +16,24 @@ uvicorn app.main:app --reload
 
 The API will be available at `http://localhost:8000`
 
-## API Endpoints
-
-- `GET /` - API info
-- `GET /trips/recent?limit=20` - Get recent trips
-- `GET /metrics/weekly?iso=YYYY-Www` - Get weekly metrics
-- `GET /metrics/compare?iso=YYYY-Www` - Get comparison metrics
-- `GET /metrics/latest-week` - Get latest available week
-
-## Data
-
-Trip data is stored in JSONL format in `data/trips/` directory. Each line contains a JSON object with:
-- `ts`: timestamp (ISO format)
-- `mode`: "train+bus" or "bus+bus"
-- `route`: route description
-- `cost`: cost in dollars
-- `sched_time_min`: scheduled time in minutes
-- `actual_time_min`: actual time in minutes
-
-## Features
-
-- File-backed data (no database required)
-- LRU caching for performance
-- CORS enabled for development
-- Error handling for malformed data
+## templates for trips
+```json
+{
+  "ts": "YYYY-MM-DDThh:mm:ss-04:00",
+  "mode": "train+bus | bus+bus",
+  "route": "Origin → ... → Destination",
+  "origin": "Start",
+  "destination": "End",
+  "segments": [
+    {"type":"local_bus","from":"...","to":"...","fare":3.40},
+    {"type":"go_train","from":"...","to":"...","tap_on":0.60,"fare":X.XX,"depart":"HH:MM","arrive":"HH:MM","sched_minutes":NN},
+    {"type":"go_bus","from":"...","to":"...","fare":0.00,"transfer_free":true}
+  ],
+  "actual_cost": 0.00,
+  "official_components": {"local_bus": 0.00, "go_point_to_point": 0.00},
+  "official_fare_total": 0.00,
+  "savings_abs": 0.00,
+  "savings_pct": 0.0,
+  "notes": ""
+}
+```

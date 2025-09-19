@@ -1,0 +1,15 @@
+{
+    "date": "2025-09-19",
+    "local_bus_cost": 3.40,
+    "go_train_cost": 5.39,
+    "go_bus_cost": 0.00,
+    "description": "Local bus to Mount Pleasant GO, tap on + GO Train (10:25-11:24) to Kitchener, free GO bus transfer to University of Waterloo."
+  }
+  {
+    "date": "2025-09-19",
+    "local_bus_cost": ,
+    "go_train_cost": ,
+    "go_bus_cost": ,
+    "description": "GO Bus from University of Waterloo to Bramalea GO to Mount Pleasant GO with Local Bus to Home"
+  }
+  
