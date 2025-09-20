@@ -7,9 +7,9 @@
   }
   {
     "date": "2025-09-19",
-    "local_bus_cost": ,
-    "go_train_cost": ,
-    "go_bus_cost": ,
-    "description": "GO Bus from University of Waterloo to Bramalea GO to Mount Pleasant GO with Local Bus to Home"
+    "local_bus_cost": 0.00 ,
+    "go_train_cost": 0.00,
+    "go_bus_cost": 2.64,
+    "description": "GO Bus from University of Waterloo to Bramalea GO to Mount Pleasant GO with Local Bus to Home (6:07 PM to 9 PM (Traffic Delays)"
   }
   
