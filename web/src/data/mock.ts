@@ -34,6 +34,16 @@ export const labs: ApiList<Lab> = {
       topArticles: placeholderProjects,
       sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
     },
+    {
+      id: "referee-decision-bias",
+      title: "Referee Decision Bias",
+      summary: "Collect match officiating events (fouls, yellows, reds, penalties) and quantify whether decisions skew for home vs away, popular vs less-popular teams, or specific players. Expose an API, run batch audits, and produce bias metrics with significance tests.",
+      keywords: ["football", "soccer", "referee", "bias", "fairness", "home advantage", "statistics", "chi-square", "logistic-regression"],
+      intensity: 85,
+      sentiment: 0.3,
+      topArticles: placeholderProjects,
+      sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
+    },
   ],
   updatedAt: now.toISOString(),
 };
