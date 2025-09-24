@@ -44,6 +44,16 @@ export const labs: ApiList<Lab> = {
       topArticles: placeholderProjects,
       sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
     },
+     {
+      id: "job-postings",
+      title: "Scraping Job Postings",
+      summary: "Web Scraping job postings from various career sites to analyze trends in job requirements, salary ranges, and company demands over time.",
+      keywords: ["web scraping", "job market", "data analysis", "trends", "automation"],
+      intensity: 85,
+      sentiment: 0.3,
+      topArticles: placeholderProjects,
+      sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
+    },
   ],
   updatedAt: now.toISOString(),
 };
