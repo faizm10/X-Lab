@@ -19,4 +19,21 @@
     "go_bus_cost": 7.62,
     "description": "GO Bus from University of Waterloo to Square One to Bramalea GO to Mount Pleasant GO (7:55 PM to 10:40 PM)"
   }
+  //faiz trip starts here
+  {
+    "date": "2025-10-01",
+    "local_bus_cost": 3.40 ,
+    "go_train_cost": 0.00,
+    "go_bus_cost": 3.32,
+    "description": "Local Bus to Mount Pleasant GO + GO Bus (8:05-9:30)"
+  }
+  {
+    "date": "2025-10-01",
+    "local_bus_cost": 0.00 ,
+    "go_train_cost": 0.00,
+    "go_bus_cost": 5.70,
+    "description": "Bus 17 From uog to uw 12:40 to 1:30"
+  }
   
+  // hamza trip starts here
+  // sammy trip starts here
