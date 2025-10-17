@@ -1,71 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { tools } from "../../../data/mock";
-
-interface JobPosting {
-  id: string;
-  title: string;
-  team: string;
-  location: string;
-  url: string;
-  postedAt: string;
-  isNew: boolean;
-}
-
-// Mock job postings - will be replaced with real scraping data
-const mockJobPostings: JobPosting[] = [
-  {
-    id: "7285986",
-    title: "Data Analyst, Intern (Master's degree)",
-    team: "University",
-    location: "Toronto",
-    url: "https://stripe.com/jobs/listing/data-analyst-intern-master-s-degree/7285986",
-    postedAt: "2025-10-16T14:30:00Z",
-    isNew: true,
-  },
-  {
-    id: "7285974",
-    title: "PhD Data Scientist, Intern",
-    team: "University",
-    location: "Toronto",
-    url: "https://stripe.com/jobs/listing/phd-data-scientist-intern/7285974",
-    postedAt: "2025-10-16T14:30:00Z",
-    isNew: true,
-  },
-  {
-    id: "7216664",
-    title: "PhD Machine Learning Engineer, Intern",
-    team: "University",
-    location: "South San Francisco HQ",
-    url: "https://stripe.com/jobs/listing/phd-machine-learning-engineer-intern/7216664",
-    postedAt: "2025-10-15T10:20:00Z",
-    isNew: false,
-  },
-  {
-    id: "7206401",
-    title: "Software Engineer, Intern",
-    team: "University",
-    location: "Singapore",
-    url: "https://stripe.com/jobs/listing/software-engineer-intern/7206401",
-    postedAt: "2025-10-14T09:15:00Z",
-    isNew: false,
-  },
-  {
-    id: "7210115",
-    title: "Software Engineer, Intern (Summer and Winter)",
-    team: "University",
-    location: "Seattle",
-    url: "https://stripe.com/jobs/listing/software-engineer-intern-summer-and-winter/7210115",
-    postedAt: "2025-10-13T16:45:00Z",
-    isNew: false,
-  },
-];
+import { fetchJobs, fetchStats, fetchNewJobsToday, type JobPosting, type StatsResponse } from "../../../lib/api";
 
 export default function AutomaticJobAlerts() {
   const [selectedFilter, setSelectedFilter] = useState<"all" | "new">("all");
+  const [jobs, setJobs] = useState<JobPosting[]>([]);
+  const [stats, setStats] = useState<StatsResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
   const tool = tools.items.find((n) => n.id === "automatic-job-alerts");
+  
+  useEffect(() => {
+    loadData();
+  }, [selectedFilter]);
+
+  async function loadData() {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Fetch stats
+      const statsData = await fetchStats();
+      setStats(statsData);
+      
+      // Fetch jobs based on filter
+      if (selectedFilter === "new") {
+        const newJobs = await fetchNewJobsToday("Stripe");
+        setJobs(newJobs.jobs);
+      } else {
+        const jobsData = await fetchJobs({
+          company: "Stripe",
+          active_only: true,
+          limit: 100,
+        });
+        setJobs(jobsData.jobs);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load data");
+      console.error("Error loading data:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
   
   if (!tool) {
     return (
@@ -75,12 +55,14 @@ export default function AutomaticJobAlerts() {
     );
   }
 
-  const filteredPostings = selectedFilter === "new" 
-    ? mockJobPostings.filter(job => job.isNew)
-    : mockJobPostings;
+  const isNew = (job: JobPosting) => {
+    const firstSeen = new Date(job.first_seen);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return firstSeen >= today;
+  };
 
-  const newJobsCount = mockJobPostings.filter(job => job.isNew).length;
-  const lastScrapedAt = new Date();
+  const lastScrapedAt = stats?.last_scraped ? new Date(stats.last_scraped) : new Date();
 
   return (
     <main className="min-h-dvh bg-background text-foreground">
@@ -123,29 +105,35 @@ export default function AutomaticJobAlerts() {
         <section className="mt-12 grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-6">
             <div className="text-sm text-foreground/60">Total Postings</div>
-            <div className="mt-2 text-3xl font-semibold">{mockJobPostings.length}</div>
+            <div className="mt-2 text-3xl font-semibold">
+              {loading ? "..." : stats?.active_jobs ?? 0}
+            </div>
           </div>
           
           <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-6">
             <div className="text-sm text-foreground/60">New Today</div>
             <div className="mt-2 text-3xl font-semibold text-green-500">
-              {newJobsCount}
+              {loading ? "..." : stats?.new_today ?? 0}
             </div>
           </div>
 
           <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-6">
             <div className="text-sm text-foreground/60">Companies Tracked</div>
-            <div className="mt-2 text-3xl font-semibold">1</div>
-            <div className="mt-1 text-xs text-foreground/50">Stripe</div>
+            <div className="mt-2 text-3xl font-semibold">
+              {loading ? "..." : stats?.companies_tracked ?? 0}
+            </div>
+            <div className="mt-1 text-xs text-foreground/50">
+              {stats?.companies.join(", ") ?? "Stripe"}
+            </div>
           </div>
 
           <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-6">
             <div className="text-sm text-foreground/60">Last Scraped</div>
             <div className="mt-2 text-sm font-medium">
-              {lastScrapedAt.toLocaleTimeString()}
+              {loading ? "..." : lastScrapedAt.toLocaleTimeString()}
             </div>
             <div className="mt-1 text-xs text-foreground/50">
-              {lastScrapedAt.toLocaleDateString()}
+              {loading ? "" : lastScrapedAt.toLocaleDateString()}
             </div>
           </div>
         </section>
@@ -165,7 +153,7 @@ export default function AutomaticJobAlerts() {
                     : "bg-foreground/5 hover:bg-foreground/10"
                 }`}
               >
-                All ({mockJobPostings.length})
+                All ({loading ? "..." : stats?.active_jobs ?? 0})
               </button>
               <button
                 onClick={() => setSelectedFilter("new")}
@@ -175,7 +163,7 @@ export default function AutomaticJobAlerts() {
                     : "bg-foreground/5 hover:bg-foreground/10"
                 }`}
               >
-                New ({newJobsCount})
+                New ({loading ? "..." : stats?.new_today ?? 0})
               </button>
             </div>
           </div>
@@ -183,12 +171,28 @@ export default function AutomaticJobAlerts() {
 
         {/* Job Listings */}
         <section className="mt-6 space-y-3">
-          {filteredPostings.length === 0 ? (
+          {error && (
+            <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 text-center">
+              <p className="text-red-500">{error}</p>
+              <button
+                onClick={loadData}
+                className="mt-4 px-4 py-2 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-500 text-sm font-medium transition-colors"
+              >
+                Retry
+              </button>
+            </div>
+          )}
+          
+          {loading ? (
+            <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-12 text-center">
+              <p className="text-foreground/60">Loading jobs...</p>
+            </div>
+          ) : jobs.length === 0 ? (
             <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-12 text-center">
               <p className="text-foreground/60">No job postings found</p>
             </div>
           ) : (
-            filteredPostings.map((job) => (
+            jobs.map((job) => (
               <div
                 key={job.id}
                 className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-6 hover:bg-foreground/[0.04] transition-colors group"
@@ -201,31 +205,35 @@ export default function AutomaticJobAlerts() {
                           <h3 className="text-lg font-semibold group-hover:text-foreground/80 transition-colors">
                             {job.title}
                           </h3>
-                          {job.isNew && (
+                          {isNew(job) && (
                             <span className="px-2 py-0.5 text-xs font-medium bg-green-500/10 text-green-500 rounded-full">
                               NEW
                             </span>
                           )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-foreground/60">
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                            </svg>
-                            {job.team}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            {job.location}
-                          </span>
+                          {job.team && (
+                            <span className="flex items-center gap-1">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                              </svg>
+                              {job.team}
+                            </span>
+                          )}
+                          {job.location && (
+                            <span className="flex items-center gap-1">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                              </svg>
+                              {job.location}
+                            </span>
+                          )}
                           <span className="flex items-center gap-1">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            {new Date(job.postedAt).toLocaleDateString()}
+                            {new Date(job.first_seen).toLocaleDateString()}
                           </span>
                         </div>
                       </div>

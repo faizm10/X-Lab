@@ -55,7 +55,7 @@ export const tools: ApiList<Tool> = {
       id: "automatic-job-alerts",
       title: "Automatic Job Alerts",
       summary: "Real-time monitoring of job postings from top companies. Get notified instantly when new positions are posted so you can apply right away.",
-      keywords: ["automation", "web scraping", "job alerts", "real-time", "stripe", "internships"],
+      keywords: ["automation", "web scraping", "job alerts", "real-time"],
       intensity: 90,
       sentiment: 0.5,
       topArticles: placeholderProjects,
