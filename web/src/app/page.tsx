@@ -1,17 +1,20 @@
 import Link from "next/link";
-import { labs } from "../data/mock";
+import { labs, tools } from "../data/mock";
 import { NarrativeCard } from "../components/NarrativeCard";
 
 export const dynamic = "force-dynamic";
 
 export default function Home() {
-  const { items } = labs;
+  const { items: labItems } = labs;
+  const { items: toolItems } = tools;
+  
   return (
     <main className="min-h-dvh bg-background text-foreground">
       <div className="mx-auto max-w-7xl px-6 md:px-10 min-h-dvh flex flex-col">
         <nav className="flex items-center justify-end py-6">
           <div className="hidden md:flex items-center gap-6 text-sm">
             <Link href="labs" className="hover:opacity-70 transition-opacity">Labs</Link>
+            <Link href="tools" className="hover:opacity-70 transition-opacity">Tools</Link>
             <a
               href="https://github.com/faizm10/faiz-lab"
               target="_blank"
@@ -34,15 +37,29 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="trending-labs">
-          <div className="mb-6 flex items-end justify-between">
-            <h2 className="text-xl font-semibold tracking-tight">Active Labs</h2>
-            <Link href="/labs" className="text-sm hover:opacity-70">View all</Link>
+        <section id="trending-labs" className="space-y-12">
+          <div>
+            <div className="mb-6 flex items-end justify-between">
+              <h2 className="text-xl font-semibold tracking-tight">Active Labs</h2>
+              <Link href="/labs" className="text-sm hover:opacity-70">View all</Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {labItems.slice(0, 3).map((n) => (
+                <NarrativeCard key={n.id} narrative={n} baseUrl="/labs" />
+              ))}
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {items.slice(0, 3).map((n) => (
-              <NarrativeCard key={n.id} narrative={n} />
-            ))}
+
+          <div>
+            <div className="mb-6 flex items-end justify-between">
+              <h2 className="text-xl font-semibold tracking-tight">Tools & Utilities</h2>
+              <Link href="/tools" className="text-sm hover:opacity-70">View all</Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {toolItems.slice(0, 3).map((n) => (
+                <NarrativeCard key={n.id} narrative={n} baseUrl="/tools" />
+              ))}
+            </div>
           </div>
         </section>
         <footer className="mt-auto py-10 border-t border-foreground/10 text-sm text-foreground/60">

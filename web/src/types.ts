@@ -42,6 +42,17 @@ export interface Lab {
   sparkline: number[]; // last N periods [0..100]
 }
 
+export interface Tool {
+  id: string;
+  title: string;
+  summary: string;
+  keywords: string[];
+  intensity: number; // 0..100 influences bubble size
+  sentiment: number; // -1..1
+  topArticles: ArticleSummary[];
+  sparkline: number[]; // last N periods [0..100]
+}
+
 export interface ApiList<T> {
   items: T[];
   updatedAt: string;

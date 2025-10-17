@@ -1,11 +1,17 @@
 import Link from "next/link";
-import type { Lab } from "../types";
+import type { Lab, Tool } from "../types";
 import { Sparkline } from "./Sparkline";
 
-export function NarrativeCard({ narrative }: { narrative: Lab }) {
+export function NarrativeCard({ 
+  narrative, 
+  baseUrl = "/labs" 
+}: { 
+  narrative: Lab | Tool;
+  baseUrl?: string;
+}) {
   return (
     <Link
-      href={`/labs/${narrative.id}`}
+      href={`${baseUrl}/${narrative.id}`}
       className="rounded-2xl border border-foreground/10 p-6 hover:bg-foreground/[.03] transition-colors"
     >
       <div className="flex items-start justify-between">
