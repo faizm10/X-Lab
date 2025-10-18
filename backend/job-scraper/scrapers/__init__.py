@@ -1,4 +1,4 @@
-from .stripe_scraper import StripeScraper
+"""Scrapers package for job scraping"""
+from .pinterest_scraper import PinterestScraper
 
-__all__ = ["StripeScraper"]
-
+__all__ = ["PinterestScraper"]

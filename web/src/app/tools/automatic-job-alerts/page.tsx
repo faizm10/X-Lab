@@ -11,13 +11,13 @@ export default function AutomaticJobAlerts() {
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [keywordFilter, setKeywordFilter] = useState<string>("all"); // "all", "intern", "internship", "co-op", "software-engineer", etc.
   
   const tool = tools.items.find((n) => n.id === "automatic-job-alerts");
   
   useEffect(() => {
     loadData();
-  }, [selectedFilter, keywordFilter]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedFilter]);
 
   async function loadData() {
     setLoading(true);
@@ -30,11 +30,11 @@ export default function AutomaticJobAlerts() {
       
       // Fetch jobs based on time filter (all jobs were already scraped with keywords)
       if (selectedFilter === "new") {
-        const newJobs = await fetchNewJobsToday("Stripe");
+        const newJobs = await fetchNewJobsToday("Pinterest");
         setJobs(filterJobsByKeyword(newJobs.jobs));
       } else {
         const jobsData = await fetchJobs({
-          company: "Stripe",
+          company: "Pinterest",
           active_only: true,
           limit: 100,
         });
@@ -112,7 +112,7 @@ export default function AutomaticJobAlerts() {
           <div className="rounded-xl border border-foreground/10 bg-foreground/[0.02] p-6">
             <div className="text-sm text-foreground/60">Total Postings</div>
             <div className="mt-2 text-3xl font-semibold">
-              {loading ? "..." : stats?.active_jobs ?? 0}
+              {loading ? "..." : stats?.total_jobs ?? 0}
             </div>
           </div>
           
@@ -129,7 +129,7 @@ export default function AutomaticJobAlerts() {
               {loading ? "..." : stats?.companies_tracked ?? 0}
             </div>
             <div className="mt-1 text-xs text-foreground/50">
-              {stats?.companies.join(", ") ?? "Stripe"}
+              {stats?.companies.join(", ") ?? "Pinterest"}
             </div>
           </div>
 
@@ -160,7 +160,7 @@ export default function AutomaticJobAlerts() {
                       : "bg-foreground/5 hover:bg-foreground/10"
                   }`}
                 >
-                  All ({loading ? "..." : stats?.active_jobs ?? 0})
+                  All ({loading ? "..." : stats?.total_jobs ?? 0})
                 </button>
                 <button
                   onClick={() => setSelectedFilter("new")}
@@ -185,8 +185,8 @@ export default function AutomaticJobAlerts() {
                   <span>Scraper Configuration</span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <span className="px-2.5 py-1 text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full">🇨🇦 Canada Only</span>
-                  <span className="px-2.5 py-1 text-xs font-semibold bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full">"Intern" Only</span>
+                  <span className="px-2.5 py-1 text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full">Pinterest</span>
+                  <span className="px-2.5 py-1 text-xs font-semibold bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full">All Engineering</span>
                 </div>
               </div>
               
@@ -195,9 +195,9 @@ export default function AutomaticJobAlerts() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
                 <div>
-                  <strong>Search Query:</strong> Only jobs with the exact word "intern" in Canadian locations
+                  <strong>Search Query:</strong> All Engineering team job postings at Pinterest
                   <div className="mt-1 text-xs text-foreground/60">
-                    Cities: Toronto, Vancouver, Ottawa, Montreal, Calgary, Edmonton, Remote in Canada
+                    Includes: Software Engineers, ML Engineers, Site Reliability, Data Science, and more
                   </div>
                 </div>
               </div>
@@ -238,22 +238,25 @@ export default function AutomaticJobAlerts() {
                     <div className="flex items-start gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-lg font-semibold group-hover:text-foreground/80 transition-colors">
-                            {job.title}
-                          </h3>
+                          <span className="px-2.5 py-1 text-xs font-semibold bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-md">
+                            {job.company}
+                          </span>
                           {isNew(job) && (
                             <span className="px-2 py-0.5 text-xs font-medium bg-green-500/10 text-green-500 rounded-full">
                               NEW
                             </span>
                           )}
                         </div>
+                        <h3 className="text-lg font-semibold group-hover:text-foreground/80 transition-colors mb-2">
+                          {job.title}
+                        </h3>
                         <div className="flex items-center gap-4 text-sm text-foreground/60">
                           {job.team && (
                             <span className="flex items-center gap-1">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                               </svg>
-                              {job.team}
+                              <span>{job.team}</span>
                             </span>
                           )}
                           {job.location && (
@@ -296,7 +299,7 @@ export default function AutomaticJobAlerts() {
           <div className="space-y-2 text-sm text-foreground/70">
             <p>• 🔍 <strong>Automatic Scraping:</strong> Checks for new postings every hour</p>
             <p>• 🔔 <strong>Instant Notifications:</strong> Get alerted immediately when new jobs are posted</p>
-            <p>• 🎯 <strong>Smart Filtering:</strong> Currently tracking Stripe internships</p>
+            <p>• 🎯 <strong>Smart Filtering:</strong> Currently tracking all Pinterest Engineering roles</p>
             <p>• 📊 <strong>Analytics:</strong> Track posting patterns and application timelines</p>
           </div>
           
@@ -304,10 +307,10 @@ export default function AutomaticJobAlerts() {
             <h4 className="text-sm font-semibold mb-2">Currently Tracking:</h4>
             <div className="flex flex-wrap gap-2">
               <span className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-500 text-xs font-medium">
-                Stripe Internships
+                Pinterest Engineering (All Roles)
               </span>
               <span className="px-3 py-1.5 rounded-lg bg-foreground/5 text-foreground/40 text-xs">
-                + More coming soon
+                + More companies coming soon
               </span>
             </div>
           </div>

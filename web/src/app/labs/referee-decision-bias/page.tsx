@@ -38,7 +38,7 @@ export default async function RefereeDecisionBias() {
         <header className="mt-6">
           <h1 className="text-3xl md:text-5xl font-semibold tracking-tight">{lab.title}</h1>
           <p className="mt-3 text-foreground/70 max-w-2xl text-base">{lab.summary}</p>
-          <p className="mt-2 text-sm text-foreground/60">I commute a lot. This lab asks: what's the best tradeoff between money and time?</p>
+          <p className="mt-2 text-sm text-foreground/60">I commute a lot. This lab asks: what&apos;s the best tradeoff between money and time?</p>
           
           <div className="mt-4 flex flex-wrap gap-2">
             {lab.keywords.map((k) => (

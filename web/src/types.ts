@@ -58,4 +58,7 @@ export interface ApiList<T> {
   updatedAt: string;
 }
 
+// NarrativeCluster is used for visualization components
+export type NarrativeCluster = Lab | Tool;
+
 

@@ -35,6 +35,16 @@ export const labs: ApiList<Lab> = {
       sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
     },
     {
+      id: "job-postings",
+      title: "Job Postings",
+      summary: "Under Construction",
+      keywords: ["jobs", "automation", "alerts"],
+      intensity: 75,
+      sentiment: 0.4,
+      topArticles: placeholderProjects,
+      sparkline: [40, 45, 48, 52, 55, 58, 62, 65, 68, 70, 72, 75],
+    },
+    {
       id: "referee-decision-bias",
       title: "Referee Decision Bias",
       summary: "Collect match officiating events (fouls, yellows, reds, penalties) and quantify whether decisions skew for home vs away, popular vs less-popular teams, or specific players. Expose an API, run batch audits, and produce bias metrics with significance tests.",
@@ -65,4 +75,17 @@ export const tools: ApiList<Tool> = {
   updatedAt: now.toISOString(),
 };
 
+// Export articles for backwards compatibility
+export const articles = placeholderProjects.map(p => ({
+  ...p,
+  content: "Sample article content",
+  highlights: [],
+  author: "Data Lab",
+  timeline: [
+    { date: "2024-01", biasIndex: 45 },
+    { date: "2024-02", biasIndex: 52 },
+    { date: "2024-03", biasIndex: 48 },
+    { date: "2024-04", biasIndex: 61 },
+  ],
+}));
 

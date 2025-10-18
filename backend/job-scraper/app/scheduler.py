@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 import logging
 import os
 
-from scrapers import StripeScraper
+from scrapers import PinterestScraper
 from models import JobPosting
 from models.database import SessionLocal
 
@@ -16,24 +16,29 @@ scheduler = AsyncIOScheduler()
 
 async def scrape_and_store_jobs():
     """
-    Scrape jobs from Stripe and store them in the database.
+    Scrape jobs from all sources (Pinterest) and store them in the database.
     Updates existing jobs and marks inactive ones.
     """
     logger.info("Starting scheduled scrape...")
     db = SessionLocal()
     
     try:
-        # Scrape Stripe jobs using configured keywords
-        scraper = StripeScraper()
-        jobs = await scraper.scrape()  # Uses default keywords
-        
-        logger.info(f"Scraped {len(jobs)} jobs from Stripe")
-        
-        # Track which job IDs we saw in this scrape
+        all_jobs = []
         scraped_job_ids = set()
         
+        # Scrape from Pinterest (All Engineering team jobs)
+        try:
+            pinterest_scraper = PinterestScraper(team="Engineering")
+            pinterest_jobs = await pinterest_scraper.scrape()
+            all_jobs.extend(pinterest_jobs)
+            logger.info(f"Scraped {len(pinterest_jobs)} Engineering jobs from Pinterest")
+        except Exception as e:
+            logger.error(f"Error scraping Pinterest: {e}")
+        
+        logger.info(f"Total scraped {len(all_jobs)} jobs from all sources")
+        
         # Process each scraped job
-        for job_data in jobs:
+        for job_data in all_jobs:
             job_id = job_data["id"]
             scraped_job_ids.add(job_id)
             
@@ -66,12 +71,11 @@ async def scrape_and_store_jobs():
                 logger.info(f"Added new job: {job_id} - {job_data['title']}")
         
         # Mark jobs not seen in this scrape as inactive
-        all_stripe_jobs = db.query(JobPosting).filter(
-            JobPosting.company == "Stripe",
+        all_active_jobs = db.query(JobPosting).filter(
             JobPosting.is_active == True
         ).all()
         
-        for job in all_stripe_jobs:
+        for job in all_active_jobs:
             if job.id not in scraped_job_ids:
                 job.is_active = False
                 logger.info(f"Marked job as inactive: {job.id}")

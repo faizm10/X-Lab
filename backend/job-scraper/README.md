@@ -5,13 +5,13 @@ Automated job posting scraper that monitors company career pages and stores job 
 ## Features
 
 - 🔍 **Automated Scraping**: Scrapes job postings every hour (configurable)
-- 🎯 **Keyword-Based Search**: Searches Stripe's job board for exact keyword:
-  - `intern` (exact word match only)
-- 🇨🇦 **Location Filtering**: Only Canadian positions (Toronto, Vancouver, Ottawa, Montreal, Calgary, Edmonton, Remote in Canada)
+- 🏢 **Company Scrapers**: Currently supports Pinterest careers page
+- 🎯 **Team Filtering**: Filter by team (Engineering, Design, Product, etc.)
+- 📍 **Location Filtering**: Filter by location (San Francisco, Remote, etc.)
 - 📊 **Database Storage**: SQLite database for storing job postings
 - 🚀 **REST API**: FastAPI endpoints for querying jobs
 - 🐳 **Docker Support**: Fully containerized with Docker Compose
-- 🔄 **Smart Deduplication**: Automatically deduplicates jobs found across multiple keyword searches
+- 🔄 **Smart Deduplication**: Automatically deduplicates jobs by unique ID
 - 📈 **Change Tracking**: Tracks when jobs are first seen, last seen, and when they become inactive
 
 ## Quick Start
@@ -23,7 +23,6 @@ Automated job posting scraper that monitors company career pages and stores job 
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-playwright install chromium
 ```
 
 2. **Run the service**:
@@ -61,7 +60,7 @@ docker-compose down
 
 ### Get All Jobs
 ```bash
-GET /api/jobs?company=Stripe&active_only=true&limit=100&offset=0
+GET /api/jobs?company=Pinterest&active_only=true&limit=100&offset=0
 ```
 
 ### Get Job by ID
@@ -71,7 +70,7 @@ GET /api/jobs/{job_id}
 
 ### Get New Jobs Today
 ```bash
-GET /api/jobs/new/today?company=Stripe
+GET /api/jobs/new/today?company=Pinterest
 ```
 
 ### Get Statistics
@@ -81,7 +80,7 @@ GET /api/stats
 
 ### Manually Trigger Scrape
 ```bash
-POST /api/scrape?company=stripe
+POST /api/scrape?company=pinterest
 ```
 
 ## Configuration
@@ -129,17 +128,20 @@ class CompanyScraper:
 ## Testing
 
 Test the scraper directly:
-```bash
-python -m scrapers.stripe_scraper
+```python
+# Create a test script
+import asyncio
+from scrapers import PinterestScraper
+
+async def test():
+    scraper = PinterestScraper(team="Engineering")
+    jobs = await scraper.scrape()
+    print(f"Found {len(jobs)} jobs")
+
+asyncio.run(test())
 ```
 
 ## Troubleshooting
-
-### Playwright Issues
-If Playwright fails to install browsers:
-```bash
-playwright install --with-deps chromium
-```
 
 ### Database Issues
 To reset the database:
@@ -156,13 +158,18 @@ docker-compose build --no-cache
 docker-compose up
 ```
 
+## Supported Companies
+
+- ✅ **Pinterest** - Full support with team and location filtering
+
 ## Future Enhancements
 
-- [ ] Add more company scrapers (Google, Meta, etc.)
+- [ ] Add more company scrapers (Stripe, Google, Meta, Shopify, etc.)
 - [ ] Email/Slack notifications for new jobs
-- [ ] Job description analysis and keyword extraction
+- [ ] Job description scraping (currently only metadata)
 - [ ] PostgreSQL support for production
 - [ ] Job application tracking
 - [ ] Advanced filtering and search
 - [ ] Historical data visualization
+- [ ] Auto-apply to jobs based on user preferences
 

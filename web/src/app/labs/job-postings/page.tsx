@@ -1,18 +1,7 @@
 import Link from "next/link";
 import { labs } from "../../../data/mock";
-import { RadarChart } from "../../../components/RadarChart";
-import type { BiasScores } from "../../../types";
 
 export const dynamic = "force-dynamic";
-
-// Placeholder performance metrics for the lab
-const placeholderMetrics: BiasScores = {
-  ideology: 50,
-  factual: 85,
-  framing: 60,
-  emotion: 45,
-  transparency: 80,
-};
 
 export default async function RefereeDecisionBias() {
   const { items } = labs;
