@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 import logging
 import os
 
-from scrapers import PinterestScraper
+from scrapers import PinterestScraper, MicrosoftScraper
 from models import JobPosting
 from models.database import SessionLocal
 
@@ -16,7 +16,7 @@ scheduler = AsyncIOScheduler()
 
 async def scrape_and_store_jobs():
     """
-    Scrape jobs from all sources (Pinterest) and store them in the database.
+    Scrape jobs from all sources (Pinterest, Microsoft) and store them in the database.
     Updates existing jobs and marks inactive ones.
     """
     logger.info("Starting scheduled scrape...")
@@ -35,6 +35,19 @@ async def scrape_and_store_jobs():
         except Exception as e:
             logger.error(f"Error scraping Pinterest: {e}")
         
+        # Scrape from Microsoft (Software Engineering internships for students and graduates)
+        try:
+            microsoft_scraper = MicrosoftScraper(
+                professions=["Engineering", "Software Engineering"],
+                experience="Students and graduates",
+                employment_type="Internship"
+            )
+            microsoft_jobs = await microsoft_scraper.scrape()
+            all_jobs.extend(microsoft_jobs)
+            logger.info(f"Scraped {len(microsoft_jobs)} internship jobs from Microsoft")
+        except Exception as e:
+            logger.error(f"Error scraping Microsoft: {e}")
+        
         logger.info(f"Total scraped {len(all_jobs)} jobs from all sources")
         
         # Process each scraped job
@@ -50,6 +63,12 @@ async def scrape_and_store_jobs():
                 existing_job.last_seen = datetime.utcnow()
                 existing_job.scraped_count += 1
                 existing_job.is_active = True
+                
+                # Update posted_date if it's missing and we have it in the scraped data
+                if not existing_job.posted_date and job_data.get("posted_date"):
+                    existing_job.posted_date = job_data.get("posted_date")
+                    logger.info(f"Updated posted_date for job: {job_id}")
+                
                 logger.debug(f"Updated existing job: {job_id}")
             else:
                 # Create new job

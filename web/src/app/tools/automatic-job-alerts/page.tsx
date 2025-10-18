@@ -7,6 +7,7 @@ import { fetchJobs, fetchStats, fetchNewJobsToday, type JobPosting, type StatsRe
 
 export default function AutomaticJobAlerts() {
   const [selectedFilter, setSelectedFilter] = useState<"all" | "new">("all");
+  const [selectedCompany, setSelectedCompany] = useState<"all" | "Pinterest" | "Microsoft">("all");
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -14,10 +15,26 @@ export default function AutomaticJobAlerts() {
   
   const tool = tools.items.find((n) => n.id === "automatic-job-alerts");
   
+  // Helper function to get the most relevant date for sorting
+  // Prioritize posted_date (actual company posting date) over first_seen (when we discovered it)
+  const getRelevantDate = (job: JobPosting): Date => {
+    if (job.posted_date) {
+      return new Date(job.posted_date);
+    }
+    return new Date(job.first_seen);
+  };
+
+  // Sort jobs by most recent posting date
+  const sortJobsByDate = (jobs: JobPosting[]): JobPosting[] => {
+    return [...jobs].sort((a, b) => 
+      getRelevantDate(b).getTime() - getRelevantDate(a).getTime()
+    );
+  };
+  
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedFilter]);
+  }, [selectedFilter, selectedCompany]);
 
   async function loadData() {
     setLoading(true);
@@ -28,17 +45,33 @@ export default function AutomaticJobAlerts() {
       const statsData = await fetchStats();
       setStats(statsData);
       
-      // Fetch jobs based on time filter (all jobs were already scraped with keywords)
+      // Fetch jobs based on time filter and company filter
       if (selectedFilter === "new") {
-        const newJobs = await fetchNewJobsToday("Pinterest");
-        setJobs(filterJobsByKeyword(newJobs.jobs));
+        if (selectedCompany === "all") {
+          // Fetch all new jobs from today without company filter
+          const newJobs = await fetchNewJobsToday();
+          setJobs(sortJobsByDate(newJobs.jobs));
+        } else {
+          const newJobs = await fetchNewJobsToday(selectedCompany);
+          setJobs(sortJobsByDate(newJobs.jobs));
+        }
       } else {
-        const jobsData = await fetchJobs({
-          company: "Pinterest",
-          active_only: true,
-          limit: 100,
-        });
-        setJobs(filterJobsByKeyword(jobsData.jobs));
+        if (selectedCompany === "all") {
+          // Fetch all jobs without company filter - this will get ALL jobs from the API
+          const jobsData = await fetchJobs({
+            active_only: true,
+            limit: 500, // Increased limit to get all jobs
+          });
+          // Sort by posting date (when available) or first_seen date (newest first)
+          setJobs(sortJobsByDate(jobsData.jobs));
+        } else {
+          const jobsData = await fetchJobs({
+            company: selectedCompany,
+            active_only: true,
+            limit: 100,
+          });
+          setJobs(sortJobsByDate(jobsData.jobs));
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load data");
@@ -56,11 +89,6 @@ export default function AutomaticJobAlerts() {
     );
   }
 
-  // All jobs already contain "intern" from scraper, so just return all
-  const filterJobsByKeyword = (jobs: JobPosting[]) => {
-    return jobs;
-  };
-  
   const isNew = (job: JobPosting) => {
     const firstSeen = new Date(job.first_seen);
     const today = new Date();
@@ -147,11 +175,11 @@ export default function AutomaticJobAlerts() {
         {/* Controls */}
         <section className="mt-12">
           <div className="flex flex-col gap-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <h2 className="text-2xl font-semibold tracking-tight">
                 Job Postings
               </h2>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setSelectedFilter("all")}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -175,29 +203,79 @@ export default function AutomaticJobAlerts() {
               </div>
             </div>
             
+            {/* Company Filter */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-foreground/60">Company:</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setSelectedCompany("all")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    selectedCompany === "all"
+                      ? "bg-foreground text-background"
+                      : "bg-foreground/5 hover:bg-foreground/10"
+                  }`}
+                >
+                  All Companies
+                </button>
+                <button
+                  onClick={() => setSelectedCompany("Pinterest")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    selectedCompany === "Pinterest"
+                      ? "bg-blue-500 text-white"
+                      : "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 dark:text-blue-400"
+                  }`}
+                >
+                  Pinterest
+                </button>
+                <button
+                  onClick={() => setSelectedCompany("Microsoft")}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    selectedCompany === "Microsoft"
+                      ? "bg-indigo-500 text-white"
+                      : "bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-400"
+                  }`}
+                >
+                  Microsoft
+                </button>
+              </div>
+            </div>
+            
             {/* Info Banner */}
             <div className="flex flex-col gap-3 p-4 rounded-lg bg-blue-500/5 border border-blue-500/20">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span>Scraper Configuration</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   <span className="px-2.5 py-1 text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full">Pinterest</span>
-                  <span className="px-2.5 py-1 text-xs font-semibold bg-purple-500/20 text-purple-600 dark:text-purple-400 rounded-full">All Engineering</span>
+                  <span className="px-2.5 py-1 text-xs font-semibold bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full">Microsoft</span>
                 </div>
               </div>
               
-              <div className="flex items-start gap-2 text-sm text-foreground/70">
-                <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-                <div>
-                  <strong>Search Query:</strong> All Engineering team job postings at Pinterest
-                  <div className="mt-1 text-xs text-foreground/60">
-                    Includes: Software Engineers, ML Engineers, Site Reliability, Data Science, and more
+              <div className="space-y-2">
+                <div className="flex items-start gap-2 text-sm text-foreground/70">
+                  <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <div>
+                    <strong>Pinterest:</strong> All Engineering team positions
+                    <div className="mt-0.5 text-xs text-foreground/60">
+                      Includes: Software Engineers, ML Engineers, Site Reliability, Data Science, and more
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 text-sm text-foreground/70">
+                  <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                  <div>
+                    <strong>Microsoft:</strong> Software Engineering internships for students and graduates
+                    <div className="mt-0.5 text-xs text-foreground/60">
+                      Includes: Azure Data, Applied AI/ML, Frontend, Fullstack, Systems, Security, and more
+                    </div>
                   </div>
                 </div>
               </div>
@@ -207,6 +285,12 @@ export default function AutomaticJobAlerts() {
 
         {/* Job Listings */}
         <section className="mt-6 space-y-3">
+          {!loading && !error && jobs.length > 0 && (
+            <div className="text-sm text-foreground/60 pb-2">
+              Showing <span className="font-semibold text-foreground">{jobs.length}</span> {jobs.length === 1 ? 'job' : 'jobs'}
+              {selectedCompany !== "all" && <span> from <span className="font-semibold text-foreground">{selectedCompany}</span></span>}
+            </div>
+          )}
           {error && (
             <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 text-center">
               <p className="text-red-500">{error}</p>
@@ -268,11 +352,14 @@ export default function AutomaticJobAlerts() {
                               {job.location}
                             </span>
                           )}
-                          <span className="flex items-center gap-1">
+                          <span className="flex items-center gap-1" title={job.posted_date ? "Date posted by company" : "Date first discovered by scraper"}>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            {new Date(job.first_seen).toLocaleDateString()}
+                            {job.posted_date 
+                              ? `Posted ${new Date(job.posted_date).toLocaleDateString()}`
+                              : `First seen ${new Date(job.first_seen).toLocaleDateString()}`
+                            }
                           </span>
                         </div>
                       </div>
@@ -299,15 +386,18 @@ export default function AutomaticJobAlerts() {
           <div className="space-y-2 text-sm text-foreground/70">
             <p>• 🔍 <strong>Automatic Scraping:</strong> Checks for new postings every hour</p>
             <p>• 🔔 <strong>Instant Notifications:</strong> Get alerted immediately when new jobs are posted</p>
-            <p>• 🎯 <strong>Smart Filtering:</strong> Currently tracking all Pinterest Engineering roles</p>
+            <p>• 🎯 <strong>Smart Filtering:</strong> Filter by company, view all jobs or only new ones</p>
             <p>• 📊 <strong>Analytics:</strong> Track posting patterns and application timelines</p>
           </div>
           
           <div className="mt-6 pt-6 border-t border-foreground/10">
             <h4 className="text-sm font-semibold mb-2">Currently Tracking:</h4>
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-500 text-xs font-medium">
+              <span className="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium">
                 Pinterest Engineering (All Roles)
+              </span>
+              <span className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-medium">
+                Microsoft Internships (Students & Graduates)
               </span>
               <span className="px-3 py-1.5 rounded-lg bg-foreground/5 text-foreground/40 text-xs">
                 + More companies coming soon

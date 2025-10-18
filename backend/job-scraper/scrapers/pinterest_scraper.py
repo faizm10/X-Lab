@@ -8,6 +8,8 @@ import httpx
 from bs4 import BeautifulSoup
 import logging
 import re
+import json
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -55,12 +57,43 @@ class PinterestScraper:
         
         return url
     
+    async def _extract_posting_date(self, client: httpx.AsyncClient, job_url: str) -> Optional[datetime]:
+        """
+        Extract posting date from individual job detail page
+        Pinterest includes posting dates in JSON-LD structured data
+        """
+        try:
+            response = await client.get(job_url)
+            response.raise_for_status()
+            
+            soup = BeautifulSoup(response.text, 'html.parser')
+            
+            # Look for JSON-LD structured data
+            scripts = soup.find_all('script', type='application/ld+json')
+            for script in scripts:
+                try:
+                    data = json.loads(script.string)
+                    if isinstance(data, dict) and 'datePosted' in data:
+                        date_str = data['datePosted']
+                        # Pinterest returns dates in YYYY-MM-DD format
+                        return datetime.fromisoformat(date_str)
+                except (json.JSONDecodeError, ValueError) as e:
+                    logger.debug(f"Could not parse JSON-LD: {e}")
+                    continue
+            
+            logger.warning(f"No posting date found for {job_url}")
+            return None
+            
+        except Exception as e:
+            logger.warning(f"Error extracting posting date from {job_url}: {e}")
+            return None
+    
     async def scrape(self) -> List[Dict[str, str]]:
         """
         Scrape all job postings from Pinterest careers page
         
         Returns:
-            List of job dictionaries with keys: id, company, title, team, location, url
+            List of job dictionaries with keys: id, company, title, team, location, url, posted_date
         """
         jobs = []
         
@@ -101,11 +134,25 @@ class PinterestScraper:
                     jobs.extend(page_jobs)
                     logger.info(f"Scraped {len(page_jobs)} jobs from page {page_num}")
                 
+                # Now fetch posting dates from individual job pages
+                logger.info(f"Fetching posting dates for {len(jobs)} jobs...")
+                for i, job in enumerate(jobs):
+                    if i > 0 and i % 5 == 0:
+                        logger.info(f"Processed {i}/{len(jobs)} job detail pages...")
+                        await asyncio.sleep(0.5)  # Be respectful with rate limiting
+                    
+                    posted_date = await self._extract_posting_date(client, job['url'])
+                    job['posted_date'] = posted_date
+                    
+                    await asyncio.sleep(0.2)  # Small delay between requests
+                
         except Exception as e:
             logger.error(f"Error scraping Pinterest: {e}")
             raise
         
         logger.info(f"Total jobs scraped from Pinterest: {len(jobs)}")
+        jobs_with_dates = sum(1 for j in jobs if j.get('posted_date'))
+        logger.info(f"Jobs with posting dates: {jobs_with_dates}/{len(jobs)}")
         return jobs
     
     def _get_total_pages(self, soup: BeautifulSoup) -> int:
@@ -214,7 +261,8 @@ class PinterestScraper:
                         "team": team,
                         "location": location,
                         "url": job_url,
-                        "description": None  # Description would require visiting individual job pages
+                        "description": None,  # Description would require visiting individual job pages
+                        "posted_date": None  # Will be fetched from job detail page
                     }
                     
                     jobs.append(job)

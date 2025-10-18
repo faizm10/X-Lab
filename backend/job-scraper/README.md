@@ -5,9 +5,8 @@ Automated job posting scraper that monitors company career pages and stores job 
 ## Features
 
 - 🔍 **Automated Scraping**: Scrapes job postings every hour (configurable)
-- 🏢 **Company Scrapers**: Currently supports Pinterest careers page
-- 🎯 **Team Filtering**: Filter by team (Engineering, Design, Product, etc.)
-- 📍 **Location Filtering**: Filter by location (San Francisco, Remote, etc.)
+- 🏢 **Company Scrapers**: Currently supports Pinterest and Microsoft careers pages
+- 🎯 **Smart Filtering**: Filter by team, profession, experience level, employment type, and location
 - 📊 **Database Storage**: SQLite database for storing job postings
 - 🚀 **REST API**: FastAPI endpoints for querying jobs
 - 🐳 **Docker Support**: Fully containerized with Docker Compose
@@ -61,6 +60,7 @@ docker-compose down
 ### Get All Jobs
 ```bash
 GET /api/jobs?company=Pinterest&active_only=true&limit=100&offset=0
+GET /api/jobs?company=Microsoft&active_only=true&limit=100&offset=0
 ```
 
 ### Get Job by ID
@@ -71,6 +71,7 @@ GET /api/jobs/{job_id}
 ### Get New Jobs Today
 ```bash
 GET /api/jobs/new/today?company=Pinterest
+GET /api/jobs/new/today?company=Microsoft
 ```
 
 ### Get Statistics
@@ -81,6 +82,7 @@ GET /api/stats
 ### Manually Trigger Scrape
 ```bash
 POST /api/scrape?company=pinterest
+POST /api/scrape?company=microsoft
 ```
 
 ## Configuration
@@ -102,11 +104,16 @@ Environment variables (set in `.env` or docker-compose.yml):
 - `location` (String): Job location
 - `url` (String): Link to job posting
 - `description` (Text): Job description
-- `first_seen` (DateTime): When job was first discovered
-- `last_seen` (DateTime): When job was last seen in scrape
+- `first_seen` (DateTime): When job was first discovered by our scraper
+- `last_seen` (DateTime): When job was last seen in a scrape
 - `is_active` (Boolean): Whether job is currently active
-- `posted_date` (DateTime): Original posting date
+- `posted_date` (DateTime): Original posting date from company website (extracted from API/website)
 - `scraped_count` (Integer): Number of times scraped
+
+**Note on Dates:**
+- `posted_date`: The date when the company posted the job (from their website/API). May be `null` if not available.
+- `first_seen`: The date when our scraper first discovered the job (our scraping time).
+- `last_seen`: The date when our scraper last saw the job (updated on each scrape).
 
 ## Adding New Company Scrapers
 
@@ -127,15 +134,32 @@ class CompanyScraper:
 
 ## Testing
 
-Test the scraper directly:
+Test the scrapers directly:
+
+### Pinterest Scraper
 ```python
-# Create a test script
 import asyncio
 from scrapers import PinterestScraper
 
 async def test():
     scraper = PinterestScraper(team="Engineering")
     jobs = await scraper.scrape()
+    print(f"Found {len(jobs)} jobs")
+
+asyncio.run(test())
+```
+
+### Microsoft Scraper
+```python
+import asyncio
+from scrapers.microsoft_scraper import scrape_microsoft
+
+async def test():
+    jobs = await scrape_microsoft(
+        professions=["Engineering", "Software Engineering"],
+        experience="Students and graduates",
+        employment_type="Internship"
+    )
     print(f"Found {len(jobs)} jobs")
 
 asyncio.run(test())
@@ -160,7 +184,18 @@ docker-compose up
 
 ## Supported Companies
 
-- ✅ **Pinterest** - Full support with team and location filtering
+- ✅ **Pinterest** - Full support with team and location filtering ([docs](PINTEREST_SCRAPER.md))
+  - HTML scraping using BeautifulSoup for job listings
+  - Extracts posting dates from individual job pages via JSON-LD structured data
+  - Filters: team, employment type, location
+  - Default: All Engineering team jobs
+  - **Note**: Scraping is slower because posting dates require fetching individual job pages
+  
+- ✅ **Microsoft** - Full support via official API ([docs](MICROSOFT_SCRAPER.md))
+  - API-based scraping (more reliable and faster)
+  - Posting dates included directly in API response
+  - Filters: profession, experience level, employment type, location
+  - Default: Software Engineering internships for students and graduates
 
 ## Future Enhancements
 
