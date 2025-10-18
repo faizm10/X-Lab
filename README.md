@@ -123,9 +123,11 @@ faiz-lab/
 
 ### Automatic Job Alerts
 
-- 🔍 **Automated Scraping**: Checks for new job postings every hour
+- 🔍 **Automated Scraping**: Searches job boards every hour using specific keywords
+- 🎯 **Keyword Search**: Searches for `intern` (exact word only)
+- 🇨🇦 **Canada Only**: Filters for Canadian cities (Toronto, Vancouver, Ottawa, Montreal, etc.)
 - 📊 **Database Storage**: Tracks job postings over time
-- 🎯 **Smart Filtering**: Filter by company, date, and status
+- 🔄 **Smart Deduplication**: Combines results from multiple searches
 - 📈 **Analytics**: Statistics on new jobs, trends, and patterns
 - 🚀 **REST API**: Query jobs programmatically
 
@@ -134,6 +136,9 @@ faiz-lab/
 ```bash
 # Get all jobs
 GET /api/jobs?company=Stripe&active_only=true&limit=100
+
+# Filter by keywords (intern, internship, co-op, coop, software engineer, etc.)
+GET /api/jobs?keywords=intern,internship,co-op,coop,software engineer,software engineering,software developer
 
 # Get jobs first seen today
 GET /api/jobs/new/today

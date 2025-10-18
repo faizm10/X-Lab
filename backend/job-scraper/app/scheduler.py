@@ -23,9 +23,9 @@ async def scrape_and_store_jobs():
     db = SessionLocal()
     
     try:
-        # Scrape Stripe jobs
+        # Scrape Stripe jobs using configured keywords
         scraper = StripeScraper()
-        jobs = await scraper.scrape("intern")
+        jobs = await scraper.scrape()  # Uses default keywords
         
         logger.info(f"Scraped {len(jobs)} jobs from Stripe")
         

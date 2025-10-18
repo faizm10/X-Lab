@@ -5,10 +5,13 @@ Automated job posting scraper that monitors company career pages and stores job 
 ## Features
 
 - 🔍 **Automated Scraping**: Scrapes job postings every hour (configurable)
+- 🎯 **Keyword-Based Search**: Searches Stripe's job board for exact keyword:
+  - `intern` (exact word match only)
+- 🇨🇦 **Location Filtering**: Only Canadian positions (Toronto, Vancouver, Ottawa, Montreal, Calgary, Edmonton, Remote in Canada)
 - 📊 **Database Storage**: SQLite database for storing job postings
 - 🚀 **REST API**: FastAPI endpoints for querying jobs
 - 🐳 **Docker Support**: Fully containerized with Docker Compose
-- 🎯 **Stripe Integration**: Currently scraping Stripe internship positions
+- 🔄 **Smart Deduplication**: Automatically deduplicates jobs found across multiple keyword searches
 - 📈 **Change Tracking**: Tracks when jobs are first seen, last seen, and when they become inactive
 
 ## Quick Start

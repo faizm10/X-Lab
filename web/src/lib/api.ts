@@ -41,6 +41,7 @@ export interface NewJobsResponse {
 export async function fetchJobs(params?: {
   company?: string;
   active_only?: boolean;
+  keywords?: string;
   limit?: number;
   offset?: number;
 }): Promise<JobsResponse> {
@@ -48,6 +49,7 @@ export async function fetchJobs(params?: {
   
   if (params?.company) searchParams.set("company", params.company);
   if (params?.active_only !== undefined) searchParams.set("active_only", String(params.active_only));
+  if (params?.keywords) searchParams.set("keywords", params.keywords);
   if (params?.limit) searchParams.set("limit", String(params.limit));
   if (params?.offset) searchParams.set("offset", String(params.offset));
   

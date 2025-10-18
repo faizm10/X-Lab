@@ -61,6 +61,7 @@ async def root():
 async def get_jobs(
     company: Optional[str] = Query(None, description="Filter by company"),
     active_only: bool = Query(True, description="Only return active jobs"),
+    keywords: Optional[str] = Query(None, description="Filter by keywords (comma-separated, e.g., 'intern,internship,co-op')"),
     limit: int = Query(100, ge=1, le=500, description="Number of jobs to return"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: Session = Depends(get_db)
@@ -77,8 +78,31 @@ async def get_jobs(
     # Order by first_seen descending (newest first)
     query = query.order_by(JobPosting.first_seen.desc())
     
-    total = query.count()
-    jobs = query.offset(offset).limit(limit).all()
+    # Get all jobs first
+    all_jobs = query.all()
+    
+    # Keyword filtering - case insensitive exact word match in title (post-query)
+    if keywords:
+        import re
+        keyword_list = [kw.strip().lower() for kw in keywords.split(',')]
+        
+        filtered_jobs = []
+        for job in all_jobs:
+            job_title_lower = job.title.lower()
+            # Check if any keyword matches as a whole word
+            for keyword in keyword_list:
+                # Use regex with word boundaries to match exact words
+                # \b matches word boundaries, so "intern" won't match "internal"
+                pattern = rf'\b{re.escape(keyword)}\b'
+                if re.search(pattern, job_title_lower):
+                    filtered_jobs.append(job)
+                    break  # Found a match, no need to check other keywords
+        
+        all_jobs = filtered_jobs
+    
+    # Apply pagination after filtering
+    total = len(all_jobs)
+    jobs = all_jobs[offset:offset + limit]
     
     return {
         "total": total,
