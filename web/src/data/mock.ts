@@ -1,4 +1,4 @@
-import type { Lab, ApiList } from "../types";
+import type { Lab, Tool, ApiList } from "../types";
 
 const now = new Date();
 
@@ -35,6 +35,16 @@ export const labs: ApiList<Lab> = {
       sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
     },
     {
+      id: "job-postings",
+      title: "Job Postings",
+      summary: "Under Construction",
+      keywords: ["jobs", "automation", "alerts"],
+      intensity: 75,
+      sentiment: 0.4,
+      topArticles: placeholderProjects,
+      sparkline: [40, 45, 48, 52, 55, 58, 62, 65, 68, 70, 72, 75],
+    },
+    {
       id: "referee-decision-bias",
       title: "Referee Decision Bias",
       summary: "Collect match officiating events (fouls, yellows, reds, penalties) and quantify whether decisions skew for home vs away, popular vs less-popular teams, or specific players. Expose an API, run batch audits, and produce bias metrics with significance tests.",
@@ -44,18 +54,38 @@ export const labs: ApiList<Lab> = {
       topArticles: placeholderProjects,
       sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
     },
-     {
-      id: "job-postings",
-      title: "Scraping Job Postings",
-      summary: "Web Scraping job postings from various career sites to analyze trends in job requirements, salary ranges, and company demands over time.",
-      keywords: ["web scraping", "job market", "data analysis", "trends", "automation"],
-      intensity: 85,
-      sentiment: 0.3,
+     
+  ],
+  updatedAt: now.toISOString(),
+};
+
+export const tools: ApiList<Tool> = {
+  items: [
+    {
+      id: "automatic-job-alerts",
+      title: "Automatic Job Alerts",
+      summary: "Real-time monitoring of job postings from top companies. Get notified instantly when new positions are posted so you can apply right away.",
+      keywords: ["automation", "web scraping", "job alerts", "real-time"],
+      intensity: 90,
+      sentiment: 0.5,
       topArticles: placeholderProjects,
-      sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
+      sparkline: [32, 38, 41, 45, 52, 58, 64, 71, 75, 82, 88, 90],
     },
   ],
   updatedAt: now.toISOString(),
 };
 
+// Export articles for backwards compatibility
+export const articles = placeholderProjects.map(p => ({
+  ...p,
+  content: "Sample article content",
+  highlights: [],
+  author: "Data Lab",
+  timeline: [
+    { date: "2024-01", biasIndex: 45 },
+    { date: "2024-02", biasIndex: 52 },
+    { date: "2024-03", biasIndex: 48 },
+    { date: "2024-04", biasIndex: 61 },
+  ],
+}));
 
