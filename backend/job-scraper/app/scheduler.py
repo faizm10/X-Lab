@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 import logging
 import os
 
-from scrapers import PinterestScraper, MicrosoftScraper
+from scrapers import PinterestScraper, MicrosoftScraper, IBMScraper
 from models import JobPosting
 from models.database import SessionLocal
 
@@ -47,6 +47,19 @@ async def scrape_and_store_jobs():
             logger.info(f"Scraped {len(microsoft_jobs)} internship jobs from Microsoft")
         except Exception as e:
             logger.error(f"Error scraping Microsoft: {e}")
+        
+        # Scrape from IBM (Software Engineering internships in Canada)
+        try:
+            ibm_scraper = IBMScraper(
+                keyword_08="Software Engineering",
+                keyword_18="Internship",
+                keyword_05="Canada"
+            )
+            ibm_jobs = await ibm_scraper.scrape()
+            all_jobs.extend(ibm_jobs)
+            logger.info(f"Scraped {len(ibm_jobs)} internship jobs from IBM")
+        except Exception as e:
+            logger.error(f"Error scraping IBM: {e}")
         
         logger.info(f"Total scraped {len(all_jobs)} jobs from all sources")
         

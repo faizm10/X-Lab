@@ -54,7 +54,9 @@ async def root():
             "jobs": "/api/jobs",
             "stats": "/api/stats",
             "scrape": "/api/scrape"
-        }
+        },
+        "companies_tracked": ["Pinterest", "Microsoft", "IBM"],
+        "scraping_frequency": "Every hour"
     }
 
 @app.get("/api/jobs")
