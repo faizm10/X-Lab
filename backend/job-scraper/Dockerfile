@@ -13,6 +13,9 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Explicitly install PostgreSQL driver (backup)
+RUN pip install --no-cache-dir psycopg2-binary==2.9.9
+
 # Copy application code
 COPY . .
 
