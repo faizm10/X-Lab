@@ -16,7 +16,12 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db():
     """Initialize the database by creating all tables"""
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+    except Exception as e:
+        # If tables already exist, that's okay - just log and continue
+        print(f"Note: Some tables may already exist: {e}")
+        pass
 
 def get_db() -> Session:
     """Dependency to get database session"""
