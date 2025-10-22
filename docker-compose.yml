@@ -1,6 +1,22 @@
 version: '3.8'
 
 services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: faiz-lab-postgres
+    environment:
+      - POSTGRES_DB=faiz_lab
+      - POSTGRES_USER=faiz_lab
+      - POSTGRES_PASSWORD=faiz_lab_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - faiz-lab-network
+
   # Job Scraper Backend
   job-scraper:
     build:
@@ -10,7 +26,7 @@ services:
     ports:
       - "8001:8001"
     environment:
-      - DATABASE_URL=sqlite:///./data/jobs.db
+      - DATABASE_URL=postgresql://faiz_lab:faiz_lab_password@postgres:5432/faiz_lab
       - SCRAPE_INTERVAL_HOURS=1
       - API_PORT=8001
       - CORS_ORIGINS=http://localhost:3000,http://localhost:3001
@@ -45,9 +61,13 @@ services:
       - /app/.next
     depends_on:
       - job-scraper
+      - postgres
     restart: unless-stopped
     networks:
       - faiz-lab-network
+
+volumes:
+  postgres_data:
 
 networks:
   faiz-lab-network:
