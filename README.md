@@ -5,8 +5,6 @@ Personal experiments, data analysis projects, and automation tools.
 ## Projects
 
 ### 🔬 Labs (Research & Analysis)
-- **GO Transit Costs**: Analyze cost/time tradeoffs for different commuting patterns
-- **Referee Decision Bias**: Statistical analysis of officiating bias in football matches
 - **Job Postings Analysis**: Web scraping and trend analysis of job market data
 
 ### 🛠️ Tools (Practical Utilities)
@@ -76,18 +74,17 @@ Frontend will be available at http://localhost:3000
 
 ```bash
 cd backend/job-scraper
-./run.sh
-```
-
-Or manually:
-
-```bash
-cd backend/job-scraper
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 playwright install chromium
 uvicorn app.main:app --reload --port 8001
+```
+
+Or use the development script:
+
+```bash
+./scripts/start-dev.sh
 ```
 
 API will be available at http://localhost:8001
@@ -101,22 +98,37 @@ faiz-lab/
 │   │   ├── app/                  # App router pages
 │   │   │   ├── labs/            # Research projects
 │   │   │   └── tools/           # Utility tools
-│   │   ├── components/          # React components
+│   │   ├── components/          # Reusable React components
 │   │   ├── lib/                 # Utilities and API clients
 │   │   └── data/                # Mock data and types
+│   ├── public/                   # Static assets
 │   └── Dockerfile
 │
 ├── backend/
-│   ├── job-scraper/             # Job scraping service
-│   │   ├── app/                 # FastAPI application
-│   │   ├── models/              # Database models
-│   │   ├── scrapers/            # Web scrapers
-│   │   ├── data/                # SQLite database
-│   │   └── Dockerfile
-│   │
-│   └── go-transit-costs/        # GO Transit analysis
+│   └── job-scraper/             # Job scraping service
+│       ├── app/                 # FastAPI application
+│       ├── models/              # Database models (SQLAlchemy)
+│       ├── scrapers/            # Company-specific web scrapers
+│       ├── data/                # SQLite database storage
+│       └── Dockerfile
 │
-└── docker-compose.yml           # Orchestration
+├── docs/                         # Documentation
+│   ├── DEPLOYMENT.md            # Deployment guide
+│   ├── DEPLOYMENT_CHECKLIST.md  # Pre-deployment checklist
+│   ├── PRODUCTION_CONFIG.md     # Production configuration
+│   └── VERCEL_SETUP.md          # Vercel-specific setup
+│
+├── scripts/                      # Utility scripts
+│   ├── setup.sh                 # Initial project setup
+│   ├── start-dev.sh             # Start development environment
+│   ├── test-cors.sh             # Test CORS configuration
+│   ├── test-deployment.sh       # Test deployment
+│   └── verify-deployment.sh     # Verify production deployment
+│
+├── docker-compose.yml           # Development orchestration
+├── docker-compose.prod.yml      # Production orchestration
+├── env.example                  # Environment variables template
+└── README.md                    # This file
 ```
 
 ## Features
@@ -267,4 +279,3 @@ This is a personal project, but feel free to fork and adapt for your own use!
 ## License
 
 MIT License - Feel free to use and modify as needed.
-# Force rebuild Sat Oct 18 21:34:56 EDT 2025

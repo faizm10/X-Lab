@@ -4,11 +4,11 @@ This directory contains individual lab pages with custom layouts. Each lab has i
 
 ## Current Labs
 
-### `go-transit-costs/`
-- **Route**: `/labs/go-transit-costs`
-- **Purpose**: Analyze GO Transit cost/time tradeoffs
-- **Layout**: Custom dashboard with metric cards, charts, and scenario analysis
-- **Features**: Cost comparison, time analysis, recent trips table
+### `job-postings/`
+- **Route**: `/labs/job-postings`
+- **Purpose**: Track and analyze job postings from various companies
+- **Layout**: Custom dashboard with job listings and analytics
+- **Features**: Real-time job scraping, company tracking, job alerts
 
 ## Adding New Labs
 
@@ -34,17 +34,17 @@ To add a new lab:
 ## Lab Identifier Convention
 
 Use descriptive, kebab-case identifiers:
-- ✅ `go-transit-costs`
+- ✅ `job-postings`
 - ✅ `weather-patterns`
 - ✅ `stock-analysis`
 - ✅ `energy-usage`
 - ❌ `lab1`, `lab2` (too generic)
-- ❌ `go_transit_costs` (use kebab-case)
+- ❌ `job_postings` (use kebab-case)
 
 ## Benefits of This Structure
 
 - **Custom layouts**: Each lab can have completely different UI/UX
-- **SEO-friendly**: Descriptive URLs like `/labs/go-transit-costs`
+- **SEO-friendly**: Descriptive URLs like `/labs/job-postings`
 - **Scalable**: Easy to add new labs without affecting existing ones
 - **Maintainable**: Each lab is self-contained
 - **Flexible**: Can use different data sources, APIs, or components per lab
