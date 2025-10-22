@@ -270,6 +270,28 @@ async def trigger_rbc_scrape(
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/api/jobs/company/{company}")
+async def delete_jobs_by_company(company: str, db: Session = Depends(get_db)):
+    """Delete all jobs from a specific company"""
+    try:
+        jobs_to_delete = db.query(JobPosting).filter(JobPosting.company == company).all()
+        count = len(jobs_to_delete)
+        
+        for job in jobs_to_delete:
+            db.delete(job)
+        
+        db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"Deleted {count} jobs from {company}",
+            "deleted_count": count
+        }
+    except Exception as e:
+        logger.error(f"Error deleting jobs for {company}: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
