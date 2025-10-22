@@ -25,16 +25,6 @@ export const placeholderProjects = [
 export const labs: ApiList<Lab> = {
   items: [
     {
-      id: "go-transit-costs",
-      title: "GO Transit - Costs",
-      summary: "Analyze cost/time tradeoffs for train+bus vs bus+bus commuting patterns.",
-      keywords: ["transit", "cost", "time", "commute", "optimization"],
-      intensity: 85,
-      sentiment: 0.3,
-      topArticles: placeholderProjects,
-      sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
-    },
-    {
       id: "job-postings",
       title: "Job Postings",
       summary: "Under Construction",
@@ -44,17 +34,6 @@ export const labs: ApiList<Lab> = {
       topArticles: placeholderProjects,
       sparkline: [40, 45, 48, 52, 55, 58, 62, 65, 68, 70, 72, 75],
     },
-    {
-      id: "referee-decision-bias",
-      title: "Referee Decision Bias",
-      summary: "Collect match officiating events (fouls, yellows, reds, penalties) and quantify whether decisions skew for home vs away, popular vs less-popular teams, or specific players. Expose an API, run batch audits, and produce bias metrics with significance tests.",
-      keywords: ["football", "soccer", "referee", "bias", "fairness", "home advantage", "statistics", "chi-square", "logistic-regression"],
-      intensity: 85,
-      sentiment: 0.3,
-      topArticles: placeholderProjects,
-      sparkline: [45, 52, 48, 61, 58, 63, 72, 68, 75, 71, 78, 82],
-    },
-     
   ],
   updatedAt: now.toISOString(),
 };
