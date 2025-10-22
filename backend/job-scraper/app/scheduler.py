@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 import logging
 import os
 
-from scrapers import PinterestScraper, MicrosoftScraper
+from scrapers import MicrosoftScraper
 from scrapers.rbc_scraper import RBCScraper
 from models import JobPosting
 from models.database import SessionLocal
@@ -17,7 +17,7 @@ scheduler = AsyncIOScheduler()
 
 async def scrape_and_store_jobs():
     """
-    Scrape jobs from all sources (Pinterest, Microsoft) and store them in the database.
+    Scrape jobs from all sources (Microsoft, RBC) and store them in the database.
     Updates existing jobs and marks inactive ones.
     """
     logger.info("Starting scheduled scrape...")
@@ -26,15 +26,6 @@ async def scrape_and_store_jobs():
     try:
         all_jobs = []
         scraped_job_ids = set()
-        
-        # Scrape from Pinterest (All Engineering team jobs)
-        try:
-            pinterest_scraper = PinterestScraper(team="Engineering")
-            pinterest_jobs = await pinterest_scraper.scrape()
-            all_jobs.extend(pinterest_jobs)
-            logger.info(f"Scraped {len(pinterest_jobs)} Engineering jobs from Pinterest")
-        except Exception as e:
-            logger.error(f"Error scraping Pinterest: {e}")
         
         # Scrape from Microsoft (Software Engineering internships for students and graduates)
         try:
