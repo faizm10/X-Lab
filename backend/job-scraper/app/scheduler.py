@@ -7,6 +7,7 @@ import os
 
 from scrapers import MicrosoftScraper
 from scrapers.rbc_scraper import RBCScraper
+from scrapers.bmo_scraper import BMOScraper
 from models import JobPosting
 from models.database import SessionLocal
 
@@ -52,6 +53,19 @@ async def scrape_and_store_jobs():
             logger.info(f"Scraped {len(rbc_jobs)} intern/co-op jobs from RBC")
         except Exception as e:
             logger.error(f"Error scraping RBC: {e}")
+        
+        # Scrape from BMO (Intern and Co-op positions)
+        try:
+            bmo_scraper = BMOScraper(
+                keywords=["intern", "internship", "co-op", "coop"],
+                location=None,  # Search all locations
+                job_type="Internship"
+            )
+            bmo_jobs = await bmo_scraper.scrape()
+            all_jobs.extend(bmo_jobs)
+            logger.info(f"Scraped {len(bmo_jobs)} intern/co-op jobs from BMO")
+        except Exception as e:
+            logger.error(f"Error scraping BMO: {e}")
         
         logger.info(f"Total scraped {len(all_jobs)} jobs from all sources")
         
