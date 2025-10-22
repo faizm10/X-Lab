@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text
+from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, Index
 from sqlalchemy.ext.declarative import declarative_base
 from datetime import datetime
 
@@ -7,12 +7,12 @@ Base = declarative_base()
 class JobPosting(Base):
     __tablename__ = "job_postings"
     
-    id = Column(String, primary_key=True)  # Job listing ID from source
-    company = Column(String, nullable=False, index=True)
-    title = Column(String, nullable=False)
-    team = Column(String, nullable=True)
-    location = Column(String, nullable=True)
-    url = Column(String, nullable=False)
+    id = Column(String(255), primary_key=True)  # Job listing ID from source
+    company = Column(String(100), nullable=False, index=True)
+    title = Column(String(255), nullable=False)
+    team = Column(String(255), nullable=True)
+    location = Column(String(255), nullable=True)
+    url = Column(String(500), nullable=False)
     description = Column(Text, nullable=True)
     
     # Metadata
