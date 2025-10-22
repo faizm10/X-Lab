@@ -183,7 +183,7 @@ async def get_stats(db: Session = Depends(get_db)):
 
 @app.post("/api/scrape")
 async def trigger_scrape(
-    company: str = Query("stripe", description="Company to scrape"),
+    company: str = Query("all", description="Company to scrape (all, microsoft, pinterest, rbc)"),
     db: Session = Depends(get_db)
 ):
     """Manually trigger a scrape"""
@@ -199,6 +199,75 @@ async def trigger_scrape(
         }
     except Exception as e:
         logger.error(f"Error during manual scrape: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/scrape/rbc")
+async def trigger_rbc_scrape(
+    keywords: Optional[str] = Query("intern,internship,co-op,coop", description="Keywords to search for"),
+    location: Optional[str] = Query(None, description="Location filter"),
+    db: Session = Depends(get_db)
+):
+    """Manually trigger RBC scraper for intern positions"""
+    logger.info(f"Manual RBC scrape triggered with keywords: {keywords}")
+    
+    try:
+        from scrapers.rbc_scraper import RBCScraper
+        
+        keyword_list = [kw.strip() for kw in keywords.split(',')] if keywords else ["intern", "internship", "co-op", "coop"]
+        
+        rbc_scraper = RBCScraper(
+            keywords=keyword_list,
+            location=location,
+            job_type="Internship"
+        )
+        
+        rbc_jobs = await rbc_scraper.scrape()
+        
+        # Store jobs in database
+        scraped_job_ids = set()
+        for job_data in rbc_jobs:
+            job_id = job_data["id"]
+            scraped_job_ids.add(job_id)
+            
+            # Check if job already exists
+            existing_job = db.query(JobPosting).filter(JobPosting.id == job_id).first()
+            
+            if existing_job:
+                # Update existing job
+                existing_job.last_seen = datetime.utcnow()
+                existing_job.scraped_count += 1
+                existing_job.is_active = True
+                logger.debug(f"Updated existing RBC job: {job_id}")
+            else:
+                # Create new job
+                new_job = JobPosting(
+                    id=job_id,
+                    company=job_data["company"],
+                    title=job_data["title"],
+                    team=job_data.get("team"),
+                    location=job_data.get("location"),
+                    url=job_data["url"],
+                    description=job_data.get("description"),
+                    posted_date=job_data.get("posted_date"),
+                    first_seen=datetime.utcnow(),
+                    last_seen=datetime.utcnow(),
+                    is_active=True,
+                    scraped_count=1
+                )
+                db.add(new_job)
+                logger.info(f"Added new RBC job: {job_id} - {job_data['title']}")
+        
+        db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"RBC scrape completed",
+            "jobs_found": len(rbc_jobs),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error during RBC scrape: {e}")
+        db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/health")

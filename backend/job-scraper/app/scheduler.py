@@ -6,6 +6,7 @@ import logging
 import os
 
 from scrapers import PinterestScraper, MicrosoftScraper
+from scrapers.rbc_scraper import RBCScraper
 from models import JobPosting
 from models.database import SessionLocal
 
@@ -47,6 +48,19 @@ async def scrape_and_store_jobs():
             logger.info(f"Scraped {len(microsoft_jobs)} internship jobs from Microsoft")
         except Exception as e:
             logger.error(f"Error scraping Microsoft: {e}")
+        
+        # Scrape from RBC (Intern and Co-op positions)
+        try:
+            rbc_scraper = RBCScraper(
+                keywords=["intern", "internship", "co-op", "coop"],
+                location=None,  # Search all locations
+                job_type="Internship"
+            )
+            rbc_jobs = await rbc_scraper.scrape()
+            all_jobs.extend(rbc_jobs)
+            logger.info(f"Scraped {len(rbc_jobs)} intern/co-op jobs from RBC")
+        except Exception as e:
+            logger.error(f"Error scraping RBC: {e}")
         
         logger.info(f"Total scraped {len(all_jobs)} jobs from all sources")
         
