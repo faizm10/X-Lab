@@ -7,7 +7,7 @@ import { fetchJobs, fetchStats, fetchNewJobsToday, type JobPosting, type StatsRe
 
 export default function AutomaticJobAlerts() {
   const [selectedFilter, setSelectedFilter] = useState<"all" | "new">("all");
-  const [selectedCompany, setSelectedCompany] = useState<"all" | "Pinterest" | "Microsoft">("all");
+  const [selectedCompany, setSelectedCompany] = useState<"all" | "Microsoft">("all");
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -157,7 +157,7 @@ export default function AutomaticJobAlerts() {
               {loading ? "..." : stats?.companies_tracked ?? 0}
             </div>
             <div className="mt-1 text-xs text-foreground/50">
-              {stats?.companies.join(", ") ?? "Pinterest"}
+              {stats?.companies.join(", ") ?? "Microsoft"}
             </div>
           </div>
 
@@ -218,16 +218,6 @@ export default function AutomaticJobAlerts() {
                   All Companies
                 </button>
                 <button
-                  onClick={() => setSelectedCompany("Pinterest")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    selectedCompany === "Pinterest"
-                      ? "bg-blue-500 text-white"
-                      : "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 dark:text-blue-400"
-                  }`}
-                >
-                  Pinterest
-                </button>
-                <button
                   onClick={() => setSelectedCompany("Microsoft")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                     selectedCompany === "Microsoft"
@@ -241,32 +231,20 @@ export default function AutomaticJobAlerts() {
             </div>
             
             {/* Info Banner */}
-            <div className="flex flex-col gap-3 p-4 rounded-lg bg-blue-500/5 border border-blue-500/20">
+            <div className="flex flex-col gap-3 p-4 rounded-lg bg-indigo-500/5 border border-indigo-500/20">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <div className="flex items-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400">
+                <div className="flex items-center gap-2 text-sm font-medium text-indigo-600 dark:text-indigo-400">
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                   <span>Scraper Configuration</span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="px-2.5 py-1 text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full">Pinterest</span>
                   <span className="px-2.5 py-1 text-xs font-semibold bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full">Microsoft</span>
                 </div>
               </div>
               
               <div className="space-y-2">
-                <div className="flex items-start gap-2 text-sm text-foreground/70">
-                  <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                  <div>
-                    <strong>Pinterest:</strong> All Engineering team positions
-                    <div className="mt-0.5 text-xs text-foreground/60">
-                      Includes: Software Engineers, ML Engineers, Site Reliability, Data Science, and more
-                    </div>
-                  </div>
-                </div>
                 <div className="flex items-start gap-2 text-sm text-foreground/70">
                   <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -393,9 +371,6 @@ export default function AutomaticJobAlerts() {
           <div className="mt-6 pt-6 border-t border-foreground/10">
             <h4 className="text-sm font-semibold mb-2">Currently Tracking:</h4>
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium">
-                Pinterest Engineering (All Roles)
-              </span>
               <span className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-medium">
                 Microsoft Internships (Students & Graduates)
               </span>

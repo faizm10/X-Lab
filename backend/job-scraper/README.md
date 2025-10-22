@@ -5,8 +5,8 @@ Automated job posting scraper that monitors company career pages and stores job 
 ## Features
 
 - 🔍 **Automated Scraping**: Scrapes job postings every hour (configurable)
-- 🏢 **Company Scrapers**: Currently supports Pinterest and Microsoft careers pages
-- 🎯 **Smart Filtering**: Filter by team, profession, experience level, employment type, and location
+- 🏢 **Company Scrapers**: Currently supports Microsoft careers pages
+- 🎯 **Smart Filtering**: Filter by profession, experience level, employment type, and location
 - 📊 **Database Storage**: SQLite database for storing job postings
 - 🚀 **REST API**: FastAPI endpoints for querying jobs
 - 🐳 **Docker Support**: Fully containerized with Docker Compose
@@ -59,7 +59,6 @@ docker-compose down
 
 ### Get All Jobs
 ```bash
-GET /api/jobs?company=Pinterest&active_only=true&limit=100&offset=0
 GET /api/jobs?company=Microsoft&active_only=true&limit=100&offset=0
 ```
 
@@ -70,7 +69,6 @@ GET /api/jobs/{job_id}
 
 ### Get New Jobs Today
 ```bash
-GET /api/jobs/new/today?company=Pinterest
 GET /api/jobs/new/today?company=Microsoft
 ```
 
@@ -81,7 +79,6 @@ GET /api/stats
 
 ### Manually Trigger Scrape
 ```bash
-POST /api/scrape?company=pinterest
 POST /api/scrape?company=microsoft
 ```
 
@@ -136,19 +133,6 @@ class CompanyScraper:
 
 Test the scrapers directly:
 
-### Pinterest Scraper
-```python
-import asyncio
-from scrapers import PinterestScraper
-
-async def test():
-    scraper = PinterestScraper(team="Engineering")
-    jobs = await scraper.scrape()
-    print(f"Found {len(jobs)} jobs")
-
-asyncio.run(test())
-```
-
 ### Microsoft Scraper
 ```python
 import asyncio
@@ -184,13 +168,6 @@ docker-compose up
 
 ## Supported Companies
 
-- ✅ **Pinterest** - Full support with team and location filtering ([docs](PINTEREST_SCRAPER.md))
-  - HTML scraping using BeautifulSoup for job listings
-  - Extracts posting dates from individual job pages via JSON-LD structured data
-  - Filters: team, employment type, location
-  - Default: All Engineering team jobs
-  - **Note**: Scraping is slower because posting dates require fetching individual job pages
-  
 - ✅ **Microsoft** - Full support via official API ([docs](MICROSOFT_SCRAPER.md))
   - API-based scraping (more reliable and faster)
   - Posting dates included directly in API response
