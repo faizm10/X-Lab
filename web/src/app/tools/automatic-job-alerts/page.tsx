@@ -7,7 +7,7 @@ import { fetchJobs, fetchStats, fetchNewJobsToday, type JobPosting, type StatsRe
 
 export default function AutomaticJobAlerts() {
   const [selectedFilter, setSelectedFilter] = useState<"all" | "new">("all");
-  const [selectedCompany, setSelectedCompany] = useState<"all" | "Pinterest" | "Microsoft">("all");
+  const [selectedCompany, setSelectedCompany] = useState<string>("all");
   const [jobs, setJobs] = useState<JobPosting[]>([]);
   const [stats, setStats] = useState<StatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -157,7 +157,7 @@ export default function AutomaticJobAlerts() {
               {loading ? "..." : stats?.companies_tracked ?? 0}
             </div>
             <div className="mt-1 text-xs text-foreground/50">
-              {stats?.companies.join(", ") ?? "Pinterest"}
+              {stats?.companies.join(", ") ?? "Microsoft"}
             </div>
           </div>
 
@@ -206,7 +206,7 @@ export default function AutomaticJobAlerts() {
             {/* Company Filter */}
             <div className="flex items-center gap-2">
               <span className="text-sm text-foreground/60">Company:</span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => setSelectedCompany("all")}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
@@ -217,26 +217,33 @@ export default function AutomaticJobAlerts() {
                 >
                   All Companies
                 </button>
-                <button
-                  onClick={() => setSelectedCompany("Pinterest")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    selectedCompany === "Pinterest"
-                      ? "bg-blue-500 text-white"
-                      : "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 dark:text-blue-400"
-                  }`}
-                >
-                  Pinterest
-                </button>
-                <button
-                  onClick={() => setSelectedCompany("Microsoft")}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                    selectedCompany === "Microsoft"
-                      ? "bg-indigo-500 text-white"
-                      : "bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-400"
-                  }`}
-                >
-                  Microsoft
-                </button>
+                {stats?.companies.map((company, index) => {
+                  const colors = [
+                    "bg-blue-500/10 text-blue-600 hover:bg-blue-500/20 dark:text-blue-400",
+                    "bg-indigo-500/10 text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-400",
+                    "bg-purple-500/10 text-purple-600 hover:bg-purple-500/20 dark:text-purple-400",
+                    "bg-green-500/10 text-green-600 hover:bg-green-500/20 dark:text-green-400",
+                    "bg-orange-500/10 text-orange-600 hover:bg-orange-500/20 dark:text-orange-400"
+                  ];
+                  const selectedColors = [
+                    "bg-blue-500 text-white",
+                    "bg-indigo-500 text-white",
+                    "bg-purple-500 text-white",
+                    "bg-green-500 text-white",
+                    "bg-orange-500 text-white"
+                  ];
+                  const colorClass = selectedCompany === company ? selectedColors[index % selectedColors.length] : colors[index % colors.length];
+                  
+                  return (
+                    <button
+                      key={company}
+                      onClick={() => setSelectedCompany(company)}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${colorClass}`}
+                    >
+                      {company}
+                    </button>
+                  );
+                })}
               </div>
             </div>
             
@@ -250,34 +257,61 @@ export default function AutomaticJobAlerts() {
                   <span>Scraper Configuration</span>
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap">
-                  <span className="px-2.5 py-1 text-xs font-semibold bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-full">Pinterest</span>
-                  <span className="px-2.5 py-1 text-xs font-semibold bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-full">Microsoft</span>
+                  {stats?.companies.map((company, index) => {
+                    const colors = [
+                      "bg-blue-500/20 text-blue-600 dark:text-blue-400",
+                      "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400",
+                      "bg-purple-500/20 text-purple-600 dark:text-purple-400",
+                      "bg-green-500/20 text-green-600 dark:text-green-400",
+                      "bg-orange-500/20 text-orange-600 dark:text-orange-400"
+                    ];
+                    return (
+                      <span key={company} className={`px-2.5 py-1 text-xs font-semibold rounded-full ${colors[index % colors.length]}`}>
+                        {company}
+                      </span>
+                    );
+                  })}
                 </div>
               </div>
               
               <div className="space-y-2">
-                <div className="flex items-start gap-2 text-sm text-foreground/70">
-                  <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                  <div>
-                    <strong>Pinterest:</strong> All Engineering team positions
-                    <div className="mt-0.5 text-xs text-foreground/60">
-                      Includes: Software Engineers, ML Engineers, Site Reliability, Data Science, and more
+                {stats?.companies.map((company) => {
+                  const getCompanyDescription = (companyName: string) => {
+                    switch (companyName.toLowerCase()) {
+                      case 'microsoft':
+                        return {
+                          title: 'Software Engineering internships for students and graduates',
+                          details: 'Includes: Azure Data, Applied AI/ML, Frontend, Fullstack, Systems, Security, and more'
+                        };
+                      case 'rbc':
+                        return {
+                          title: 'Intern and Co-op positions',
+                          details: 'Includes: Software Engineering, Data Science, Business Analysis, and more'
+                        };
+                      default:
+                        return {
+                          title: 'Job postings',
+                          details: 'Various positions and opportunities'
+                        };
+                    }
+                  };
+                  
+                  const description = getCompanyDescription(company);
+                  
+                  return (
+                    <div key={company} className="flex items-start gap-2 text-sm text-foreground/70">
+                      <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <div>
+                        <strong>{company}:</strong> {description.title}
+                        <div className="mt-0.5 text-xs text-foreground/60">
+                          {description.details}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <div className="flex items-start gap-2 text-sm text-foreground/70">
-                  <svg className="w-4 h-4 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                  <div>
-                    <strong>Microsoft:</strong> Software Engineering internships for students and graduates
-                    <div className="mt-0.5 text-xs text-foreground/60">
-                      Includes: Azure Data, Applied AI/ML, Frontend, Fullstack, Systems, Security, and more
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -393,12 +427,31 @@ export default function AutomaticJobAlerts() {
           <div className="mt-6 pt-6 border-t border-foreground/10">
             <h4 className="text-sm font-semibold mb-2">Currently Tracking:</h4>
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-medium">
-                Pinterest Engineering (All Roles)
-              </span>
-              <span className="px-3 py-1.5 rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-medium">
-                Microsoft Internships (Students & Graduates)
-              </span>
+              {stats?.companies.map((company, index) => {
+                const colors = [
+                  "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+                  "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+                  "bg-purple-500/10 text-purple-600 dark:text-purple-400",
+                  "bg-green-500/10 text-green-600 dark:text-green-400",
+                  "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                ];
+                const getCompanyLabel = (companyName: string) => {
+                  switch (companyName.toLowerCase()) {
+                    case 'microsoft':
+                      return 'Microsoft Internships (Students & Graduates)';
+                    case 'rbc':
+                      return 'RBC Interns & Co-ops';
+                    default:
+                      return `${company} Jobs`;
+                  }
+                };
+                
+                return (
+                  <span key={company} className={`px-3 py-1.5 rounded-lg text-xs font-medium ${colors[index % colors.length]}`}>
+                    {getCompanyLabel(company)}
+                  </span>
+                );
+              })}
               <span className="px-3 py-1.5 rounded-lg bg-foreground/5 text-foreground/40 text-xs">
                 + More companies coming soon
               </span>
