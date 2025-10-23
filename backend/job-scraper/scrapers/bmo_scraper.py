@@ -43,9 +43,11 @@ class BMOScraper:
         """Build the search parameters for BMO careers"""
         params = {
             "keywords": " ".join(self.keywords),
-            "location": self.location or "",
+            "location": self.location or "Ontario",  # Default to Ontario as requested
             "page": str(page),
-            "sortBy": "relevance"
+            "sortBy": "relevance",
+            "department": "Technology",  # Filter for Technology department
+            "jobType": "Intern (Fixed Term)"  # Filter for Intern positions
         }
         return params
     

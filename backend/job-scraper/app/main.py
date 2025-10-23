@@ -185,7 +185,7 @@ async def get_stats(db: Session = Depends(get_db)):
 
 @app.post("/api/scrape")
 async def trigger_scrape(
-    company: str = Query("all", description="Company to scrape (all, microsoft, pinterest, rbc, bmo)"),
+    company: str = Query("all", description="Company to scrape (all, microsoft, rbc, bmo)"),
     db: Session = Depends(get_db)
 ):
     """Manually trigger a scrape"""
