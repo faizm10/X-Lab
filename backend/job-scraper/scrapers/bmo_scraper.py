@@ -10,6 +10,7 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import re
 import json
+from playwright.async_api import async_playwright
 
 logger = logging.getLogger(__name__)
 
@@ -53,7 +54,7 @@ class BMOScraper:
     
     async def scrape(self) -> List[Dict[str, str]]:
         """
-        Scrape all job postings from BMO careers page
+        Scrape all job postings from BMO careers page using Playwright
         
         Returns:
             List of job dictionaries with keys: id, company, title, team, location, url
@@ -61,67 +62,72 @@ class BMOScraper:
         jobs = []
         
         try:
-            async with httpx.AsyncClient(
-                timeout=30.0,
-                follow_redirects=True,
-                headers={
-                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-                    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                    "Accept-Language": "en-US,en;q=0.5",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "Connection": "keep-alive",
-                    "Upgrade-Insecure-Requests": "1",
-                }
-            ) as client:
-                # First, try to get the search results page
+            async with async_playwright() as p:
+                # Launch browser
+                browser = await p.chromium.launch(headless=True)
+                context = await browser.new_context(
+                    user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                )
+                page = await context.new_page()
+                
+                # Build the search URL with parameters
                 search_params = self._build_search_params(1)
-                logger.info(f"Scraping BMO careers: {self.SEARCH_URL}")
-                logger.info(f"Search params: {search_params}")
+                search_url = f"{self.SEARCH_URL}?" + "&".join([f"{k}={v}" for k, v in search_params.items() if v])
                 
-                response = await client.get(self.SEARCH_URL, params=search_params)
-                response.raise_for_status()
+                logger.info(f"Scraping BMO careers: {search_url}")
                 
-                # Parse the HTML response
-                soup = BeautifulSoup(response.text, 'html.parser')
+                # Navigate to the page
+                await page.goto(search_url, wait_until="networkidle")
+                
+                # Wait for job listings to load
+                try:
+                    await page.wait_for_selector('[data-automation-id="jobTitle"], .job-title, .search-result, article', timeout=10000)
+                except:
+                    logger.warning("No job selectors found, trying alternative approach")
+                
+                # Get the page content
+                content = await page.content()
+                soup = BeautifulSoup(content, 'html.parser')
                 
                 # Extract jobs from the page
                 page_jobs = self._extract_jobs_from_html(soup)
                 jobs.extend(page_jobs)
                 logger.info(f"Scraped {len(page_jobs)} jobs from page 1")
                 
-                # Check for pagination
-                pagination = soup.find('nav', class_='pagination') or soup.find('div', class_='pagination')
-                if pagination:
-                    # Try to find total pages
-                    page_links = pagination.find_all('a', href=True)
-                    max_page = 1
-                    for link in page_links:
-                        try:
-                            page_num = int(link.text.strip())
-                            max_page = max(max_page, page_num)
-                        except ValueError:
-                            continue
+                # Check for pagination and scrape additional pages
+                try:
+                    # Look for pagination
+                    pagination_selectors = [
+                        'nav[aria-label="pagination"]',
+                        '.pagination',
+                        '[data-automation-id="pagination"]',
+                        'nav[role="navigation"]'
+                    ]
                     
-                    logger.info(f"Found pagination with {max_page} pages")
-                    
-                    # Scrape remaining pages
-                    for page_num in range(2, min(max_page + 1, 10)):  # Limit to 10 pages
-                        await asyncio.sleep(1.0)  # Be respectful
-                        
-                        search_params = self._build_search_params(page_num)
-                        logger.info(f"Scraping page {page_num}...")
-                        
-                        response = await client.get(self.SEARCH_URL, params=search_params)
-                        response.raise_for_status()
-                        
-                        soup = BeautifulSoup(response.text, 'html.parser')
-                        page_jobs = self._extract_jobs_from_html(soup)
-                        jobs.extend(page_jobs)
-                        logger.info(f"Scraped {len(page_jobs)} jobs from page {page_num}")
-                        
-                        # If no jobs found on this page, stop
-                        if not page_jobs:
+                    pagination_found = False
+                    for selector in pagination_selectors:
+                        if await page.locator(selector).count() > 0:
+                            pagination_found = True
                             break
+                    
+                    if pagination_found:
+                        # Try to find and click next page
+                        next_button = page.locator('a[aria-label="Next"], button[aria-label="Next"], .next, [data-automation-id="next"]')
+                        if await next_button.count() > 0:
+                            await next_button.click()
+                            await page.wait_for_load_state("networkidle")
+                            
+                            # Extract jobs from next page
+                            content = await page.content()
+                            soup = BeautifulSoup(content, 'html.parser')
+                            page_jobs = self._extract_jobs_from_html(soup)
+                            jobs.extend(page_jobs)
+                            logger.info(f"Scraped {len(page_jobs)} jobs from page 2")
+                            
+                except Exception as e:
+                    logger.warning(f"Pagination handling failed: {e}")
+                
+                await browser.close()
                 
         except Exception as e:
             logger.error(f"Error scraping BMO: {e}")
@@ -135,7 +141,7 @@ class BMOScraper:
         jobs = []
         
         try:
-            # Look for job listings - BMO might use different selectors
+            # Look for job listings - BMO uses dynamic content, so we need broader selectors
             job_selectors = [
                 'div[data-automation-id="jobTitle"]',
                 '.job-title',
@@ -145,7 +151,16 @@ class BMOScraper:
                 '.job-item',
                 '[data-testid="job-card"]',
                 '.job-card',
-                '.search-result-item'
+                '.search-result-item',
+                # BMO-specific selectors
+                '[data-automation-id*="job"]',
+                '[data-testid*="job"]',
+                '.css-1q2dra3',  # Common BMO selector
+                '.css-19uc56f',  # Common BMO selector
+                'div[class*="job"]',
+                'div[class*="result"]',
+                'div[class*="card"]',
+                'div[class*="item"]'
             ]
             
             job_elements = []
@@ -157,9 +172,14 @@ class BMOScraper:
                     break
             
             if not job_elements:
-                # Fallback: look for any div with job-related classes
-                job_elements = soup.find_all('div', class_=re.compile(r'job|listing|result|card'))
+                # Fallback: look for any div with job-related classes or attributes
+                job_elements = soup.find_all('div', class_=re.compile(r'job|listing|result|card|item'))
                 logger.info(f"Fallback: Found {len(job_elements)} potential job elements")
+                
+                # Also try to find any elements with job-related data attributes
+                if not job_elements:
+                    job_elements = soup.find_all(attrs={'data-automation-id': re.compile(r'job|title|result', re.IGNORECASE)})
+                    logger.info(f"Data attributes fallback: Found {len(job_elements)} potential job elements")
             
             for job_element in job_elements:
                 try:
