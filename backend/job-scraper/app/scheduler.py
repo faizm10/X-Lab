@@ -7,6 +7,7 @@ import os
 
 from scrapers import MicrosoftScraper
 from scrapers.rbc_scraper import RBCScraper
+from scrapers.google_scraper import GoogleScraper
 from models import JobPosting
 from models.database import SessionLocal
 
@@ -52,6 +53,20 @@ async def scrape_and_store_jobs():
             logger.info(f"Scraped {len(rbc_jobs)} intern/co-op jobs from RBC")
         except Exception as e:
             logger.error(f"Error scraping RBC: {e}")
+        
+        # Scrape from Google (Software Developer Intern positions)
+        try:
+            google_scraper = GoogleScraper(
+                employment_type="INTERN",
+                target_level="INTERN_AND_APPRENTICE",
+                search_query="Software Developer",
+                locations=["Canada", "United States"]
+            )
+            google_jobs = await google_scraper.scrape()
+            all_jobs.extend(google_jobs)
+            logger.info(f"Scraped {len(google_jobs)} software developer intern jobs from Google")
+        except Exception as e:
+            logger.error(f"Error scraping Google: {e}")
         
         logger.info(f"Total scraped {len(all_jobs)} jobs from all sources")
         
