@@ -7,6 +7,7 @@ import os
 
 from scrapers import MicrosoftScraper
 from scrapers.rbc_scraper import RBCScraper
+from scrapers.uber_scraper import UberScraper
 from models import JobPosting
 from models.database import SessionLocal
 
@@ -52,6 +53,18 @@ async def scrape_and_store_jobs():
             logger.info(f"Scraped {len(rbc_jobs)} intern/co-op jobs from RBC")
         except Exception as e:
             logger.error(f"Error scraping RBC: {e}")
+        
+        # Scrape from Uber (University/Engineering positions)
+        try:
+            uber_scraper = UberScraper(
+                department="University",
+                team="Engineering"
+            )
+            uber_jobs = await uber_scraper.scrape()
+            all_jobs.extend(uber_jobs)
+            logger.info(f"Scraped {len(uber_jobs)} university/engineering jobs from Uber")
+        except Exception as e:
+            logger.error(f"Error scraping Uber: {e}")
         
         logger.info(f"Total scraped {len(all_jobs)} jobs from all sources")
         
