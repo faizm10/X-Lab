@@ -1,4 +1,4 @@
-# Faiz Lab
+# Haiz Lab
 
 Personal experiments, data analysis projects, and automation tools.
 

@@ -53,7 +53,10 @@ async def root():
         "endpoints": {
             "jobs": "/api/jobs",
             "stats": "/api/stats",
-            "scrape": "/api/scrape"
+            "scrape": "/api/scrape",
+            "rbc_scrape": "/api/scrape/rbc",
+            "bmo_scrape": "/api/scrape/bmo",
+            "cibc_scrape": "/api/scrape/cibc"
         }
     }
 
@@ -183,7 +186,7 @@ async def get_stats(db: Session = Depends(get_db)):
 
 @app.post("/api/scrape")
 async def trigger_scrape(
-    company: str = Query("all", description="Company to scrape (all, microsoft, pinterest, rbc)"),
+    company: str = Query("all", description="Company to scrape (all, microsoft, rbc, bmo, cibc)"),
     db: Session = Depends(get_db)
 ):
     """Manually trigger a scrape"""
@@ -267,6 +270,144 @@ async def trigger_rbc_scrape(
         }
     except Exception as e:
         logger.error(f"Error during RBC scrape: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/scrape/bmo")
+async def trigger_bmo_scrape(
+    keywords: Optional[str] = Query("intern,internship,co-op,coop", description="Keywords to search for"),
+    location: Optional[str] = Query(None, description="Location filter"),
+    db: Session = Depends(get_db)
+):
+    """Manually trigger BMO scraper for intern positions"""
+    logger.info(f"Manual BMO scrape triggered with keywords: {keywords}")
+    
+    try:
+        from scrapers.bmo_scraper import BMOScraper
+        
+        keyword_list = [kw.strip() for kw in keywords.split(',')] if keywords else ["intern", "internship", "co-op", "coop"]
+        
+        bmo_scraper = BMOScraper(
+            keywords=keyword_list,
+            location=location,
+            job_type="Internship"
+        )
+        
+        bmo_jobs = await bmo_scraper.scrape()
+        
+        # Store jobs in database
+        scraped_job_ids = set()
+        for job_data in bmo_jobs:
+            job_id = job_data["id"]
+            scraped_job_ids.add(job_id)
+            
+            # Check if job already exists
+            existing_job = db.query(JobPosting).filter(JobPosting.id == job_id).first()
+            
+            if existing_job:
+                # Update existing job
+                existing_job.last_seen = datetime.utcnow()
+                existing_job.scraped_count += 1
+                existing_job.is_active = True
+                logger.debug(f"Updated existing BMO job: {job_id}")
+            else:
+                # Create new job
+                new_job = JobPosting(
+                    id=job_id,
+                    company=job_data["company"],
+                    title=job_data["title"],
+                    team=job_data.get("team"),
+                    location=job_data.get("location"),
+                    url=job_data["url"],
+                    description=job_data.get("description"),
+                    posted_date=job_data.get("posted_date"),
+                    first_seen=datetime.utcnow(),
+                    last_seen=datetime.utcnow(),
+                    is_active=True,
+                    scraped_count=1
+                )
+                db.add(new_job)
+                logger.info(f"Added new BMO job: {job_id} - {job_data['title']}")
+        
+        db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"BMO scrape completed",
+            "jobs_found": len(bmo_jobs),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error during BMO scrape: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/scrape/cibc")
+async def trigger_cibc_scrape(
+    keywords: Optional[str] = Query("intern,internship,co-op,coop", description="Keywords to search for"),
+    location: Optional[str] = Query(None, description="Location filter"),
+    db: Session = Depends(get_db)
+):
+    """Manually trigger CIBC scraper for intern positions"""
+    logger.info(f"Manual CIBC scrape triggered with keywords: {keywords}")
+    
+    try:
+        from scrapers.cibc_scraper import CIBCScraper
+        
+        keyword_list = [kw.strip() for kw in keywords.split(',')] if keywords else ["intern", "internship", "co-op", "coop"]
+        
+        cibc_scraper = CIBCScraper(
+            keywords=keyword_list,
+            location=location,
+            job_type="Internship"
+        )
+        
+        cibc_jobs = await cibc_scraper.scrape()
+        
+        # Store jobs in database
+        scraped_job_ids = set()
+        for job_data in cibc_jobs:
+            job_id = job_data["id"]
+            scraped_job_ids.add(job_id)
+            
+            # Check if job already exists
+            existing_job = db.query(JobPosting).filter(JobPosting.id == job_id).first()
+            
+            if existing_job:
+                # Update existing job
+                existing_job.last_seen = datetime.utcnow()
+                existing_job.scraped_count += 1
+                existing_job.is_active = True
+                logger.debug(f"Updated existing CIBC job: {job_id}")
+            else:
+                # Create new job
+                new_job = JobPosting(
+                    id=job_id,
+                    company=job_data["company"],
+                    title=job_data["title"],
+                    team=job_data.get("team"),
+                    location=job_data.get("location"),
+                    url=job_data["url"],
+                    description=job_data.get("description"),
+                    posted_date=job_data.get("posted_date"),
+                    first_seen=datetime.utcnow(),
+                    last_seen=datetime.utcnow(),
+                    is_active=True,
+                    scraped_count=1
+                )
+                db.add(new_job)
+                logger.info(f"Added new CIBC job: {job_id} - {job_data['title']}")
+        
+        db.commit()
+        
+        return {
+            "status": "success",
+            "message": f"CIBC scrape completed",
+            "jobs_found": len(cibc_jobs),
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Error during CIBC scrape: {e}")
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
