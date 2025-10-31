@@ -110,7 +110,59 @@ vercel --prod
 
 ---
 
-## 3. Verification
+## 3. Backend Redeployment After Code Changes
+
+**IMPORTANT:** When you make changes to backend code (especially scheduler), Railway needs to redeploy.
+
+### When Backend MUST Redeploy:
+
+- ✅ Changes to `backend/job-scraper/app/scheduler.py` (adding/removing scrapers)
+- ✅ Changes to `backend/job-scraper/app/main.py` (API endpoints)
+- ✅ Changes to `backend/job-scraper/models/` (database schema)
+- ✅ Changes to `backend/job-scraper/requirements.txt` (dependencies)
+- ✅ Changes to `backend/job-scraper/Dockerfile`
+
+### Railway Auto-Deployment:
+
+Railway should automatically deploy when you push to `main` branch. However:
+
+1. **Check deployment status:**
+   - Railway Dashboard → Deployments
+   - Verify latest commit is deployed
+
+2. **If auto-deploy didn't trigger:**
+   ```bash
+   cd backend/job-scraper
+   railway up
+   ```
+
+### Verifying Scheduler Changes:
+
+After redeploying, check the backend logs to verify scrapers are running:
+
+**Railway Dashboard** → job-scraper service → Logs
+
+You should see:
+```
+Starting scheduled scrape...
+Scraped X internship jobs from Microsoft
+Scraped Y intern/co-op jobs from RBC
+Scraped Z software developer intern jobs from Google
+```
+
+### If Companies Don't Match Between Localhost and Deployed:
+
+This usually means the deployed database has stale data. See `docs/DEPLOYMENT_SYNC.md` for detailed troubleshooting.
+
+**Quick fix:**
+1. Verify scheduler code matches what you expect
+2. Ensure code is pushed to `main`
+3. Manually trigger Railway redeploy if needed
+4. Wait for next scrape cycle (up to 1 hour)
+
+---
+
+## 4. Verification
 
 ### Test Backend (Railway)
 
@@ -152,7 +204,7 @@ Should see stats data, NOT a CORS error.
 
 ---
 
-## 4. Update Railway CORS When Vercel URL Changes
+## 5. Update Railway CORS When Vercel URL Changes
 
 If your Vercel URL changes, update Railway's `CORS_ORIGINS`:
 
@@ -165,7 +217,7 @@ Then redeploy the backend service.
 
 ---
 
-## 5. Common Issues & Troubleshooting
+## 6. Common Issues & Troubleshooting
 
 ### ❌ Frontend shows "Failed to fetch" errors
 
@@ -206,7 +258,7 @@ Then redeploy the backend service.
 
 ---
 
-## 6. URLs Quick Reference
+## 7. URLs Quick Reference
 
 Fill these in after deployment:
 
@@ -218,7 +270,7 @@ Fill these in after deployment:
 
 ---
 
-## 7. Environment Variables Summary
+## 8. Environment Variables Summary
 
 ### Railway (Backend)
 ```bash

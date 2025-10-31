@@ -2,10 +2,19 @@
 
 This directory contains scrapers for various company job boards.
 
-## Pinterest Scraper
+## Currently Active Scrapers
+
+The following scrapers are currently scheduled in `app/scheduler.py`:
+- **Microsoft** - Engineering internships (via official API)
+- **RBC** - Intern/Co-op positions
+- **Google** - Software Developer Intern positions
+
+## Pinterest Scraper (Deprecated - Not Currently Active)
 
 ### Overview
 The Pinterest scraper extracts job listings from Pinterest's careers page at `https://www.pinterestcareers.com/jobs/`.
+
+**Note:** This scraper is documented but not currently active in the scheduler. It may be re-enabled in the future.
 
 ### Features
 - Scrapes all job listings with pagination support

@@ -5,7 +5,7 @@ Automated job posting scraper that monitors company career pages and stores job 
 ## Features
 
 - 🔍 **Automated Scraping**: Scrapes job postings every hour (configurable)
-- 🏢 **Company Scrapers**: Currently supports Pinterest and Microsoft careers pages
+- 🏢 **Company Scrapers**: Currently supports Microsoft, RBC, and Google careers pages
 - 🎯 **Smart Filtering**: Filter by team, profession, experience level, employment type, and location
 - 📊 **Database Storage**: SQLite database for storing job postings
 - 🚀 **REST API**: FastAPI endpoints for querying jobs
@@ -184,22 +184,25 @@ docker-compose up
 
 ## Supported Companies
 
-- ✅ **Pinterest** - Full support with team and location filtering ([docs](PINTEREST_SCRAPER.md))
-  - HTML scraping using BeautifulSoup for job listings
-  - Extracts posting dates from individual job pages via JSON-LD structured data
-  - Filters: team, employment type, location
-  - Default: All Engineering team jobs
-  - **Note**: Scraping is slower because posting dates require fetching individual job pages
-  
-- ✅ **Microsoft** - Full support via official API ([docs](MICROSOFT_SCRAPER.md))
+- ✅ **Microsoft** - Full support via official API
   - API-based scraping (more reliable and faster)
   - Posting dates included directly in API response
   - Filters: profession, experience level, employment type, location
   - Default: Software Engineering internships for students and graduates
 
+- ✅ **RBC** - Intern and Co-op positions
+  - Scrapes from RBC careers page
+  - Filters by keywords (intern, internship, co-op, coop)
+  - Location and job type filtering supported
+
+- ✅ **Google** - Software Developer Intern positions
+  - Scrapes from Google careers page
+  - Filters by employment type, target level, and location
+  - Default: INTERN positions in Canada and United States
+
 ## Future Enhancements
 
-- [ ] Add more company scrapers (Stripe, Google, Meta, Shopify, etc.)
+- [ ] Add more company scrapers (Stripe, Meta, Shopify, Amazon, etc.)
 - [ ] Email/Slack notifications for new jobs
 - [ ] Job description scraping (currently only metadata)
 - [ ] PostgreSQL support for production
