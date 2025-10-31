@@ -13,12 +13,14 @@ The deployed Railway backend has **stale database data** from previous scraper c
 - **Deployed site** shows: Microsoft, Pinterest (from old database)
 - **Localhost** shows: Google, BMO (from your local database)
 
-However, the **actual scheduler code** in the repository currently includes:
+However, after pulling latest from main, the **actual scheduler code** in the repository now includes:
 - ✅ Microsoft (Engineering internships)
 - ✅ RBC (Intern/Co-op positions)
+- ✅ BMO (Intern/Co-op positions) - *just added to main*
+- ✅ CIBC (Intern/Co-op positions) - *just added to main*
 - ✅ Google (Software Developer Intern positions)
 
-Pinterest and BMO scrapers aren't actually in the current codebase - they're either leftover from previous versions or were never implemented but got added to the database somehow.
+Pinterest scraper isn't in the current codebase - it's leftover from previous versions or documentation that referenced it without implementation.
 
 ## The Fix
 

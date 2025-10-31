@@ -20,7 +20,7 @@ scheduler = AsyncIOScheduler()
 
 async def scrape_and_store_jobs():
     """
-    Scrape jobs from all sources (Microsoft, RBC, Google) and store them in the database.
+    Scrape jobs from all sources (Microsoft, RBC, BMO, CIBC, Google) and store them in the database.
     Updates existing jobs and marks inactive ones.
     """
     logger.info("Starting scheduled scrape...")
