@@ -433,6 +433,28 @@ async def delete_jobs_by_company(company: str, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.delete("/api/jobs/all")
+async def delete_all_jobs(db: Session = Depends(get_db)):
+    """Delete all jobs from the database (clean slate)"""
+    try:
+        total_jobs = db.query(JobPosting).count()
+        
+        # Delete all jobs
+        db.query(JobPosting).delete()
+        db.commit()
+        
+        logger.info(f"Deleted all {total_jobs} jobs from database")
+        
+        return {
+            "status": "success",
+            "message": f"Deleted all {total_jobs} jobs from database",
+            "deleted_count": total_jobs
+        }
+    except Exception as e:
+        logger.error(f"Error deleting all jobs: {e}")
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
