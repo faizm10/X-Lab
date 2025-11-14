@@ -14,7 +14,7 @@ const labels: Record<keyof StatGridProps, string> = {
 
 export function StatGrid(stats: StatGridProps) {
   return (
-    <section className="stat-grid">
+    <section className="panel stat-grid">
       {Object.entries(stats).map(([key, value]) => (
         <article key={key} className="stat-grid__item">
           <p>{labels[key as keyof StatGridProps]}</p>

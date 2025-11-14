@@ -22,6 +22,12 @@ const seniorityOptions: { label: string; value: JobSeniority }[] = [
 
 export function FilterPanel({ jobs, filters, onChange }: FilterPanelProps) {
   const companies = Array.from(new Set(jobs.map((job) => job.company))).sort();
+  const activeFilters =
+    filters.companies.length +
+    filters.workModels.length +
+    filters.seniority.length +
+    (filters.search.trim() ? 1 : 0) +
+    (filters.onlyActive ? 0 : 1);
 
   const toggleValue = <T extends string>(collection: T[], value: T): T[] => {
     return collection.includes(value)
@@ -30,7 +36,15 @@ export function FilterPanel({ jobs, filters, onChange }: FilterPanelProps) {
   };
 
   return (
-    <section className="filters">
+    <section className="panel filters">
+      <div className="filters__header">
+        <div>
+          <p className="eyebrow subtle">Filters</p>
+          <h2>Dial in the postings that matter.</h2>
+        </div>
+        <p className="filters__active">{activeFilters} active</p>
+      </div>
+
       <div className="filters__row">
         <div className="filters__group">
           <label htmlFor="search">Search</label>

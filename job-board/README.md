@@ -10,11 +10,14 @@ npm install
 npm run dev
 ```
 
-Build for production:
+Build & serve production bundle:
 
 ```bash
 npm run build
-npm run preview
+npm start
+
+# optional
+npm run lint
 ```
 
 ## Updating job data manually
@@ -22,7 +25,7 @@ npm run preview
 1. Open `job-board/data/jobs.json`
 2. Duplicate an existing object or paste results exported from the backend scraper
 3. Keep IDs unique (e.g., `company_role_year_city`)
-4. Commit the change — Vercel, Netlify, or GitHub Pages can serve the static bundle
+4. Commit the change — deploy with Vercel, Netlify, or any Next.js-friendly host
 
 ## Automated flow (recommended)
 
@@ -38,7 +41,7 @@ npm run preview
    - Export fresh data into the frontend JSON file
 
 2. Commit the updated JSON (manually or via a GitHub Actions workflow)
-3. Deploy the static site — no database or API hosting required
+3. Deploy the site — no database or API hosting required
 
 ## GitHub Actions sketch
 
