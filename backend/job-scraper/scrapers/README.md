@@ -7,6 +7,10 @@ This directory contains scrapers for various company job boards.
 The following scrapers are currently scheduled in `app/scheduler.py`:
 - **Microsoft** - Engineering internships (via official API)
 - **RBC** - Intern/Co-op positions
+- **BMO** - Intern/Co-op positions
+- **CIBC** - Intern/Co-op positions
+- **Interac** - Intern/Co-op positions
+- **Ramp** - Software Engineer internships (Emerging Talent)
 - **Google** - Software Developer Intern positions
 
 ## Pinterest Scraper (Deprecated - Not Currently Active)

@@ -164,6 +164,7 @@ class BMOScraper:
             ]
             
             job_elements = []
+            seen_ids = set()
             for selector in job_selectors:
                 elements = soup.select(selector)
                 if elements:
@@ -185,7 +186,14 @@ class BMOScraper:
                 try:
                     job_data = self._extract_job_data(job_element)
                     if job_data:
+                        job_id = job_data.get("id")
+                        if job_id and job_id in seen_ids:
+                            logger.debug("Skipping duplicate job id %s", job_id)
+                            continue
+
                         jobs.append(job_data)
+                        if job_id:
+                            seen_ids.add(job_id)
                         logger.debug(f"Extracted job: {job_data.get('title', 'Unknown')}")
                 except Exception as e:
                     logger.error(f"Error extracting job data: {e}")
@@ -289,13 +297,13 @@ class BMOScraper:
             # Extract job ID from URL
             job_id = None
             if url:
-                # Try to extract job ID from URL
-                id_match = re.search(r'/job/(\d+)', url)
+                # Try to extract job ID from URL (alphanumeric slug)
+                id_match = re.search(r"/job/([^/]+)", url)
                 if id_match:
-                    job_id = id_match.group(1)
+                    job_id = id_match.group(1).lower()
                 else:
-                    # Use URL hash as ID
-                    job_id = str(hash(url))[-8:]  # Last 8 characters of hash
+                    # Use deterministic hash of URL for fallback
+                    job_id = re.sub(r"[^a-z0-9]+", "-", url.lower()).strip("-")[-12:]
             
             if not job_id:
                 job_id = f"bmo_{hash(url)}"

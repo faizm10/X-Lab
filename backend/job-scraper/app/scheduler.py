@@ -10,6 +10,7 @@ from scrapers.rbc_scraper import RBCScraper
 from scrapers.bmo_scraper import BMOScraper
 from scrapers.cibc_scraper import CIBCScraper
 from scrapers.google_scraper import GoogleScraper
+from scrapers.ramp_scraper import RampScraper
 from scrapers.interac_scraper import InteracScraper
 from models import JobPosting
 from models.database import SessionLocal
@@ -21,7 +22,7 @@ scheduler = AsyncIOScheduler()
 
 async def scrape_and_store_jobs():
     """
-    Scrape jobs from all sources (Microsoft, RBC, BMO, CIBC, Interac, Google) and store them in the database.
+    Scrape jobs from all sources (Microsoft, RBC, BMO, CIBC, Interac, Ramp, Google) and store them in the database.
     Updates existing jobs and marks inactive ones.
     """
     logger.info("Starting scheduled scrape...")
@@ -96,6 +97,15 @@ async def scrape_and_store_jobs():
         except Exception as e:
             logger.error(f"Error scraping Interac: {e}")
         
+        # Scrape from Ramp (Software Engineer Internship positions)
+        try:
+            ramp_scraper = RampScraper()
+            ramp_jobs = await ramp_scraper.scrape()
+            all_jobs.extend(ramp_jobs)
+            logger.info(f"Scraped {len(ramp_jobs)} SWE internship jobs from Ramp")
+        except Exception as e:
+            logger.error(f"Error scraping Ramp: {e}")
+
         # Scrape from Google (Software Developer Intern positions)
         try:
             google_scraper = GoogleScraper(

@@ -17,6 +17,7 @@ Personal experiments, data analysis projects, and automation tools.
 - **TypeScript**
 - **Tailwind CSS**
 - **Geist Font**
+- **Vite + React** static job board (`job-board/`) that reads JSON data directly
 
 ### Backend
 - **FastAPI** (Python)
@@ -120,6 +121,8 @@ faiz-lab/
 │   ├── VERCEL_SETUP.md          # Vercel-specific setup
 │   └── ISSUE_17_FIX.md          # Fix for deployment sync issues
 │
+├── job-board/                    # Static JSON-powered frontend
+│
 ├── scripts/                      # Utility scripts
 │   ├── setup.sh                 # Initial project setup
 │   ├── start-dev.sh             # Start development environment
@@ -132,6 +135,23 @@ faiz-lab/
 ├── env.example                  # Environment variables template
 └── README.md                    # This file
 ```
+
+## Static job board (no backend required)
+
+If you only need a curated list of postings, use the new `job-board/` folder:
+
+1. `cd job-board && npm install`
+2. Run locally with `npm run dev`
+3. Manage postings in `job-board/data/jobs.json`
+4. Commit the JSON update and redeploy—no database or API hosting involved
+
+Automate the refresh with the scraper toolkit:
+
+```bash
+python backend/job-scraper/scrape_and_export.py --output job-board/data/jobs.json
+```
+
+The included workflow `.github/workflows/sync-job-data.yml` runs this command on a schedule, commits any changes, and keeps the static site in sync.
 
 ## Features
 
