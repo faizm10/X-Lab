@@ -1,0 +1,60 @@
+[
+  {
+    "id": "google_swe_intern_2025_toronto",
+    "company": "Google",
+    "title": "Software Engineering Intern",
+    "location": "Toronto, ON",
+    "workModel": "hybrid",
+    "team": "Cloud",
+    "discipline": "Software Engineering",
+    "description": "Work with the Cloud Observability team to build tooling for internal platform teams.",
+    "tags": ["Python", "Distributed Systems", "Kubernetes"],
+    "postedAt": "2025-10-28T00:00:00.000Z",
+    "applyUrl": "https://careers.google.com/jobs/results/software-engineering-intern",
+    "salaryRange": {
+      "min": 45,
+      "max": 55,
+      "currency": "CAD",
+      "cadence": "hourly"
+    },
+    "seniority": "internship",
+    "isActive": true
+  },
+  {
+    "id": "microsoft_rbc_collab_program",
+    "company": "Microsoft",
+    "title": "Product Manager Intern",
+    "location": "Vancouver, BC",
+    "workModel": "onsite",
+    "team": "Azure Data",
+    "discipline": "Product",
+    "description": "Coordinate roadmap delivery for Azure Data Studio’s AI copilots.",
+    "tags": ["AI", "Product Strategy"],
+    "postedAt": "2025-10-15T00:00:00.000Z",
+    "applyUrl": "https://careers.microsoft.com/students/internships",
+    "salaryRange": {
+      "min": 8300,
+      "max": 8700,
+      "currency": "CAD",
+      "cadence": "monthly"
+    },
+    "seniority": "internship",
+    "isActive": true
+  },
+  {
+    "id": "interac_campus_security_coop",
+    "company": "Interac",
+    "title": "Security Engineering Co-op",
+    "location": "Toronto, ON",
+    "workModel": "remote",
+    "team": "Identity",
+    "discipline": "Security",
+    "description": "Assist the digital identity squad with threat modeling and control automation.",
+    "tags": ["Security", "Terraform", "AWS"],
+    "postedAt": "2025-09-30T00:00:00.000Z",
+    "applyUrl": "https://www.interac.ca/en/careers",
+    "seniority": "co-op",
+    "isActive": false
+  }
+]
+

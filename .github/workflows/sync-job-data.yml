@@ -1,0 +1,42 @@
+name: Sync job data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 * * *"
+
+jobs:
+  scrape-and-export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install scraper deps
+        run: pip install -r backend/job-scraper/requirements.txt
+
+      - name: Scrape + export to static frontend
+        run: python backend/job-scraper/scrape_and_export.py --output job-board/data/jobs.json
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet job-board/data/jobs.json; then
+            echo "No job updates."
+            exit 0
+          fi
+          git config user.name "faiz-lab-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add job-board/data/jobs.json
+          git commit -m "chore: refresh job data"
+
+      - name: Push changes
+        if: success()
+        uses: ad-m/github-push-action@v0.8.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
